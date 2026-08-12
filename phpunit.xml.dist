@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    PHPUnit 9.6, and not 10, deliberately.
+
+    WordPress's own test library calls PHPUnit\Util\Test::parseTestMethodAnnotations(),
+    which PHPUnit 10 removed. One runner for both suites is worth more than
+    anything 10 adds.
+-->
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
+         colors="true"
+         beStrictAboutOutputDuringTests="true"
+         failOnWarning="true"
+         failOnRisky="true"
+         cacheResultFile=".phpunit.cache/result.cache">
+
+    <testsuites>
+        <!-- Pure PHP: no WordPress, no WooCommerce, no database. The document
+             model, the validation and the numbering rules live there on purpose. -->
+        <testsuite name="unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+        <!-- Needs WordPress, WooCommerce and a database it is allowed to destroy. -->
+        <testsuite name="integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+    </testsuites>
+
+    <coverage>
+        <include>
+            <directory suffix=".php">src</directory>
+        </include>
+    </coverage>
+</phpunit>

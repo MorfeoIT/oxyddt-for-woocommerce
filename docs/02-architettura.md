@@ -1,0 +1,141 @@
+# Architettura
+
+Come è messo insieme il plugin, e le scelte che la specifica lasciava aperte.
+
+## Gli strati
+
+```
+src/Domain/          PHP puro: nessuna funzione WordPress, nessun $wpdb
+src/Infrastructure/  container, migrazioni, orologio, WooCommerce
+src/Security/        capability
+src/Settings/        la riga di opzione
+src/Audit/           il registro in sola aggiunta
+src/Admin/           la pagina WooCommerce → DDT
+```
+
+La regola che regge tutto: **il calcolo sta nel Domain e non conosce
+WordPress.** Le quantità residue, la validazione dei documenti e le regole di
+numerazione arrivano lì. È quello che permette alla suite unit di girare in un
+secondo su qualunque macchina, senza database, e di provare ogni ramo — compresi
+i casi che dentro WordPress si riproducono a fatica, come il capodanno alle 00:30
+con il fuso del negozio diverso da UTC.
+
+`ClockInterface` esiste per quello: nessun `time()` sparso nel codice.
+
+## Il container
+
+Serve a una cosa sola: permettere al PRO (e a un add-on di terzi) di
+**sostituire** un servizio — la sequenza di numerazione, il renderer PDF, il
+repository dei documenti — invece di modificare un file del gratuito. Il punto
+di aggancio è `oxyddt_register_services`, che scatta quando i servizi sono
+dichiarati e nessuno è ancora stato costruito.
+
+Regola ereditata da OxyProfit, scritta prima di averne bisogno: **il PRO non
+contiene formule**, contiene un provider. Il calcolo sta nel gratuito, scritto e
+provato una volta sola. E il PRO senza licenza non deve mai spegnere il
+gratuito.
+
+## Dati
+
+I documenti **non stanno nei post meta**. Un negozio con quattro anni di
+spedizioni ha centinaia di migliaia di righe, e «quali righe di quest'ordine
+sono già uscite» è una domanda che una tabella di meta non regge.
+
+Tabelle previste (nomi definitivi, `{prefix}` è quello del sito):
+
+| Tabella | Sprint |
+|---|---|
+| `{prefix}oxyddt_logs` | 1 ✅ |
+| `{prefix}oxyddt_documents` | 2 |
+| `{prefix}oxyddt_items` | 2 |
+| `{prefix}oxyddt_orders` | 2 (DDT ↔ ordini, molti a molti) |
+| `{prefix}oxyddt_sequences` | 4 |
+| `{prefix}oxyddt_carriers` | 5-6 |
+
+Lo schema è versionato in `Migrator::TARGET_VERSION` e ogni migrazione registra
+la propria versione, così una migrazione interrotta riprende da dove si è
+fermata. Gira all'attivazione **e** alla prima richiesta dopo un aggiornamento:
+un plugin aggiornato via FTP o WP-CLI non esegue mai l'hook di attivazione.
+
+### Perché il log è la prima tabella
+
+Il registro deve poter annotare il cambio di impostazioni che viene *prima* del
+primo documento. Un documento immutabile e un numero che non si riusa si
+difendono solo se esiste traccia di chi ha fatto cosa.
+
+Non c'è una colonna con l'indirizzo IP, di proposito: sarebbe un dato personale
+conservato per anni, su un documento che nessuno consulta per quello, e l'utente
+più la data rispondono già a tutte le domande per cui il registro esiste.
+
+## WooCommerce
+
+* `Requires Plugins: woocommerce` nell'intestazione: da WordPress 6.5 è
+  WordPress stesso a impedire l'attivazione senza WooCommerce.
+* Compatibilità **HPOS** e blocchi di checkout dichiarate con `FeaturesUtil`, a
+  caricamento del file e non dentro un hook nostro: WooCommerce spara
+  `before_woocommerce_init` mentre parte.
+* **Mai leggere le tabelle degli ordini**, né quelle legacy né quelle HPOS: solo
+  CRUD e API di WooCommerce. È l'unico modo perché il plugin funzioni con
+  entrambe le memorizzazioni.
+* Il boot del plugin è su `plugins_loaded` a priorità 20, dopo che WooCommerce
+  ha avuto modo di esserci.
+
+## Capability
+
+Sette, come da specifica ma con il prefisso corretto. La mappa dei ruoli:
+
+| Ruolo | Capability |
+|---|---|
+| `administrator` | tutte e sette |
+| `shop_manager` | view, create, issue, send, cancel |
+
+Un shop manager gestisce la giornata di spedizioni; numerazione e dati del
+mittente sono configurazione fiscale che si tocca una volta e che, sbagliata,
+è sbagliata su ogni documento stampato dopo.
+
+`GRANT_VERSION` viene alzata ogni volta che la mappa cambia, e la concessione
+viene rifatta: senza, un sito conserverebbe per sempre le capability del giorno
+in cui ha installato il plugin. È il difetto che su OxyProfit è costato uno
+sprint.
+
+Nota: se `shop_manager` non esiste ancora (WooCommerce non ha ancora installato
+i suoi ruoli) l'opzione **non** viene scritta, così si riprova alla richiesta
+successiva.
+
+## Interfaccia
+
+Una sola voce sotto WooCommerce, chiamata **DDT**, con schede dentro — come fa
+WooCommerce stesso. Un plugin che aggiunge quattro voci al menu di un negozio è
+un plugin che si disinstalla. Le schede si registrano da sole (`Screen::add_tab`),
+così lo sprint che aggiunge una schermata aggiunge un file invece di modificarne
+tre. La barra delle schede non si disegna finché ce n'è una sola.
+
+## Scelte ancora da fare, con la raccomandazione
+
+**Motore PDF (sprint 5): dompdf.** LGPL 2.1, compatibile GPL, è quello che usa
+il plugin da 300.000 installazioni del settore, e prende HTML+CSS come sorgente:
+la personalizzazione del template dello §12 viene quasi gratis. Va **vendorato**
+nel pacchetto (niente dipendenze SaaS, niente Composer runtime). Alternative
+scartate: TCPDF (API a coordinate, template impossibili da personalizzare senza
+codice), mPDF (più pesante, stessa resa).
+
+**FREE e PRO sono due plugin separati**, non uno con codice dormiente sbloccato
+da licenza: la linea guida 5 di wordpress.org vieta il trialware. `oxyddt-for-woocommerce`
+e `oxyddt-for-woocommerce-pro`.
+
+## Mappa degli sprint
+
+| Sprint | Contenuto | Stato |
+|---|---|---|
+| 1 | bootstrap, migrazioni, impostazioni azienda, capability | ✅ |
+| 2 | modello DDT, relazione ordine-DDT, snapshot cliente | |
+| 3 | creazione da ordine, quantità residue, evasione parziale | |
+| 4 | numerazione atomica, emissione, immutabilità, annullamento | |
+| 5 | PDF, download protetto, stampa, email | |
+| 6 | registro, filtri, box nell'ordine | |
+| 7 | HPOS, test di concorrenza, sicurezza, prestazioni | |
+| 8 | i18n, documentazione, pacchetto per wordpress.org | |
+
+Sullo sprint 4: il test di concorrenza («due utenti premono Emetti insieme»)
+si scrive **nello sprint 4**, non nel 7. Una numerazione che si scopre fragile
+allo sprint 7 ha già prodotto documenti.

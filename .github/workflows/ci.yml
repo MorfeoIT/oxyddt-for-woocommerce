@@ -1,0 +1,168 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  standards:
+    name: Coding standards and static analysis
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          coverage: none
+          tools: composer:v2
+
+      - uses: ramsey/composer-install@v3
+
+      - name: WordPress coding standards
+        run: composer lint
+
+      - name: PHPStan, level 8
+        run: composer analyse
+
+  unit:
+    name: Unit tests, PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.2', '8.3', '8.4']
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: composer:v2
+
+      - uses: ramsey/composer-install@v3
+
+      # No database, no WordPress, no WooCommerce: the Domain layer is plain PHP
+      # on purpose, and this is what that buys.
+      - name: PHPUnit, unit suite
+        run: composer test
+
+  wordpress:
+    name: Integration, PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.1', '8.3']
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: oxyddt_tests
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mysqli, gd, zip
+          coverage: none
+          tools: composer:v2
+
+      - uses: ramsey/composer-install@v3
+
+      - name: Build the WordPress and WooCommerce test environment
+        id: wp
+        env:
+          WP_DB_NAME: oxyddt_tests
+          WP_DB_USER: root
+          WP_DB_PASSWORD: root
+          WP_DB_HOST: 127.0.0.1
+        run: |
+          scripts/wordpress-test-env.sh >env.txt
+          echo "config=$(sed -n 1p env.txt)" >>"$GITHUB_OUTPUT"
+          echo "woocommerce=$(sed -n 2p env.txt)" >>"$GITHUB_OUTPUT"
+
+      - name: PHPUnit, integration suite
+        env:
+          WP_PHPUNIT__TESTS_CONFIG: ${{ steps.wp.outputs.config }}
+          WP_WOOCOMMERCE_DIR: ${{ steps.wp.outputs.woocommerce }}
+        run: composer test:integration
+
+  package:
+    name: Distributable package
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # What ships is what `git archive` produces, so what ships is what gets
+      # checked. .gitattributes is easy to forget when a directory is added, and
+      # the plugin directory's reviewers are not.
+      - name: Build it the way the release does
+        run: |
+          mkdir -p build
+          git archive --format=tar --prefix=oxyddt-for-woocommerce/ HEAD | tar -x -C build
+
+      - name: Nothing that belongs to development may be in it
+        run: |
+          status=0
+          for unwanted in vendor tests scripts docs .github composer.json phpunit.xml.dist phpcs.xml.dist phpstan.neon.dist README.md; do
+            if [ -e "build/oxyddt-for-woocommerce/${unwanted}" ]; then
+              echo "::error::${unwanted} would be shipped to users."
+              status=1
+            fi
+          done
+
+          hidden="$(find build/oxyddt-for-woocommerce -name '.*' -not -name '.' -print)"
+          if [ -n "${hidden}" ]; then
+            echo "::error::the plugin directory rejects hidden files: ${hidden}"
+            status=1
+          fi
+
+          exit "${status}"
+
+      - name: And everything users need must be
+        run: |
+          status=0
+          for required in oxyddt-for-woocommerce.php readme.txt uninstall.php LICENSE src assets; do
+            if [ ! -e "build/oxyddt-for-woocommerce/${required}" ]; then
+              echo "::error::${required} is missing from the package."
+              status=1
+            fi
+          done
+
+          exit "${status}"
+
+      - name: Every shipped file must parse
+        run: find build/oxyddt-for-woocommerce -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: oxyddt-for-woocommerce-plugin
+          path: build/oxyddt-for-woocommerce
+          if-no-files-found: error
