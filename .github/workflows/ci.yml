@@ -103,7 +103,9 @@ jobs:
           WP_DB_PASSWORD: root
           WP_DB_HOST: 127.0.0.1
         run: |
-          scripts/wordpress-test-env.sh >env.txt
+          # Called through bash on purpose: the repository is worked on from
+          # Windows, where git cannot record an executable bit of its own.
+          bash scripts/wordpress-test-env.sh >env.txt
           echo "config=$(sed -n 1p env.txt)" >>"$GITHUB_OUTPUT"
           echo "woocommerce=$(sed -n 2p env.txt)" >>"$GITHUB_OUTPUT"
 
