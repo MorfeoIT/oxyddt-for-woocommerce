@@ -199,14 +199,41 @@ final class SecurityTest extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_the_endpoints_are_admin_post_only(): void {
-		$this->assertGreaterThan( 0, has_action( 'admin_post_oxyddt_pdf' ) );
-		$this->assertGreaterThan( 0, has_action( 'admin_post_oxyddt_send_document' ) );
-		$this->assertGreaterThan( 0, has_action( 'admin_post_oxyddt_save_document' ) );
+		$clock = new SystemClock();
 
-		// admin_post_nopriv_* would be the same endpoint open to anybody at all.
+		$actions = new \Oxysoft\OxyDDT\Admin\DocumentActions(
+			$this->documents,
+			new \Oxysoft\OxyDDT\Pdf\PdfService(
+				new \Oxysoft\OxyDDT\Pdf\DompdfRenderer(),
+				$this->archive,
+				new \Oxysoft\OxyDDT\Pdf\DocumentHtml( new Templates() ),
+				$this->documents,
+				new AuditLog( $clock )
+			),
+			new \Oxysoft\OxyDDT\Mail\DocumentMailer(
+				new \Oxysoft\OxyDDT\Pdf\PdfService(
+					new \Oxysoft\OxyDDT\Pdf\DompdfRenderer(),
+					$this->archive,
+					new \Oxysoft\OxyDDT\Pdf\DocumentHtml( new Templates() ),
+					$this->documents,
+					new AuditLog( $clock )
+				),
+				new AuditLog( $clock )
+			)
+		);
+
+		$actions->register();
+
+		$this->assertNotFalse( has_action( 'admin_post_oxyddt_pdf' ) );
+		$this->assertNotFalse( has_action( 'admin_post_oxyddt_send_document' ) );
+
+		// admin_post_nopriv_* is the same endpoint open to anybody at all. Not
+		// registering it is what keeps a delivery note off the open web, and it is
+		// one line away from being registered by mistake.
 		$this->assertFalse( has_action( 'admin_post_nopriv_oxyddt_pdf' ) );
 		$this->assertFalse( has_action( 'admin_post_nopriv_oxyddt_send_document' ) );
 		$this->assertFalse( has_action( 'admin_post_nopriv_oxyddt_save_document' ) );
+		$this->assertFalse( has_action( 'admin_post_nopriv_oxyddt_cancel_document' ) );
 	}
 
 	/**
@@ -223,8 +250,11 @@ final class SecurityTest extends WP_UnitTestCase {
 
 		$this->assertStringContainsString( '_wpnonce=', $url );
 
+		// wp_nonce_url() runs its result through esc_html(), so the separators come
+		// back as &#038; — right for an href, and not something parse_str() can
+		// read.
 		$query = array();
-		parse_str( (string) wp_parse_url( $url, PHP_URL_QUERY ), $query );
+		parse_str( (string) wp_parse_url( html_entity_decode( $url ), PHP_URL_QUERY ), $query );
 
 		$this->assertSame(
 			1,
