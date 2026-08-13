@@ -5,6 +5,28 @@ read; this one is for whoever works on the plugin.
 
 ## [Unreleased]
 
+### Sprint 5 — the PDF, the download, the email
+
+* A4 delivery note rendered by a bundled dompdf, with the shop's logo embedded
+  from disk. Remote fetching is switched off in the engine: the page is built
+  partly from what a customer typed, and a document that could fetch URLs while
+  rendering is a server-side request forgery with extra steps.
+* The PDF is rendered once when the document is issued and archived with its
+  SHA-256. Everything afterwards reads that same file, so the shop's copy and
+  the customer's are the same copy. A file that has gone missing is rebuilt from
+  the snapshot, and the register says so.
+* Downloads go through an endpoint that checks a capability and a nonce. The
+  archive directory carries an .htaccess, a web.config and an index.php, and
+  every filename ends in twenty random characters — but the endpoint is the part
+  that actually decides.
+* Printing is the same endpoint served inline, not a second layout to keep in
+  step with the first.
+* Manual email with the PDF attached, addressed to the customer as the document
+  froze them, with a subject and body a shop can rewrite through a filter.
+  Automatic sending stays out of the free plugin on purpose.
+* The whole page comes from `templates/pdf/document.php`, which a theme replaces
+  by putting its own at `oxyddt/pdf/document.php`.
+
 ### Sprint 4 — numbering, issuing, immutability, cancelling
 
 * Numbers are handed out by the database, not by PHP: one `UPDATE … SET

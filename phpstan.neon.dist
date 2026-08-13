@@ -17,3 +17,6 @@ parameters:
         -
             identifier: requireOnce.fileNotFound
             path: src/Infrastructure/Migrator.php
+        -
+            identifier: requireOnce.fileNotFound
+            path: src/Pdf/PdfStore.php

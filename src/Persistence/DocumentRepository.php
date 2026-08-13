@@ -250,6 +250,64 @@ final class DocumentRepository implements DocumentRepositoryInterface {
 	}
 
 	/**
+	 * The archived PDF of a document, if it has one.
+	 *
+	 * Kept off the Document model on purpose: a delivery note is what it says,
+	 * not where a file happens to sit on this server. Moving a site to another
+	 * host changes the second and must not be able to change the first.
+	 *
+	 * @param int $id Row identifier.
+	 * @return array{path: string, hash: string}|null
+	 */
+	public function pdf_of( int $id ): ?array {
+		global $wpdb;
+
+		$table = Migrator::table( Migrator::TABLE_DOCUMENTS );
+
+		/**
+		 * The row, or null.
+		 *
+		 * @var array<string, mixed>|null $row
+		 */
+		$row = $wpdb->get_row(
+			$wpdb->prepare( "SELECT pdf_path, pdf_hash FROM {$table} WHERE id = %d", $id ),
+			ARRAY_A
+		);
+
+		if ( ! is_array( $row ) || '' === (string) ( $row['pdf_path'] ?? '' ) ) {
+			return null;
+		}
+
+		return array(
+			'path' => (string) $row['pdf_path'],
+			'hash' => (string) ( $row['pdf_hash'] ?? '' ),
+		);
+	}
+
+	/**
+	 * Record where a document's PDF was archived, and what it was.
+	 *
+	 * @param int    $id   Row identifier.
+	 * @param string $path Path relative to the uploads directory.
+	 * @param string $hash SHA-256 of the file as it was written.
+	 * @return void
+	 */
+	public function set_pdf( int $id, string $path, string $hash ): void {
+		global $wpdb;
+
+		$wpdb->update(
+			Migrator::table( Migrator::TABLE_DOCUMENTS ),
+			array(
+				'pdf_path' => $path,
+				'pdf_hash' => $hash,
+			),
+			array( 'id' => $id ),
+			array( '%s', '%s' ),
+			array( '%d' )
+		);
+	}
+
+	/**
 	 * The columns of a document row.
 	 *
 	 * @param Document  $document  The document.

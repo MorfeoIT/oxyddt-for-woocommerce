@@ -11,6 +11,8 @@
 declare(strict_types=1);
 
 define( 'ABSPATH', '/wordpress/' );
+// Defined by WordPress when the filesystem API is loaded, and not in the stubs.
+define( 'FS_CHMOD_FILE', 0644 );
 define( 'WP_UNINSTALL_PLUGIN', true );
 define( 'WC_VERSION', '9.0.0' );
 define( 'ARRAY_A', 'ARRAY_A' );

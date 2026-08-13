@@ -12,7 +12,7 @@ namespace Oxysoft\OxyDDT\Admin;
 use Automattic\WooCommerce\Utilities\OrderUtil;
 use Oxysoft\OxyDDT\Domain\Document;
 use Oxysoft\OxyDDT\Domain\DocumentStatus;
-use Oxysoft\OxyDDT\Domain\FulfilmentStatus;
+use Oxysoft\OxyDDT\Infrastructure\Labels;
 use Oxysoft\OxyDDT\Infrastructure\Registrable;
 use Oxysoft\OxyDDT\Security\Capabilities;
 use Oxysoft\OxyDDT\WooCommerce\OrderFulfilment;
@@ -92,7 +92,7 @@ final class OrderMetabox implements Registrable {
 		$fulfilment = $this->fulfilment->for_order( $order );
 		$documents  = $this->fulfilment->documents_for( $order );
 
-		echo '<p><strong>' . esc_html( self::status_label( $fulfilment->status() ) ) . '</strong><br />';
+		echo '<p><strong>' . esc_html( Labels::fulfilment_status( $fulfilment->status() ) ) . '</strong><br />';
 		echo esc_html(
 			sprintf(
 				/* translators: 1: quantity sent, 2: quantity ordered. */
@@ -148,13 +148,24 @@ final class OrderMetabox implements Registrable {
 			'%1$s — %2$s — %3$s',
 			$name,
 			null === $document->document_date ? '—' : $document->document_date,
-			self::document_status_label( $document->status )
+			Labels::document_status( $document->status )
 		);
 
 		$link = '<a href="' . esc_url( EditScreen::url( (int) ( $order_ids[0] ?? 0 ), $document->id ) ) . '">'
 			. esc_html( $label ) . '</a>';
 
-		return DocumentStatus::Cancelled === $document->status ? '<del>' . $link . '</del>' : $link;
+		if ( DocumentStatus::Cancelled === $document->status ) {
+			return '<del>' . $link . '</del>';
+		}
+
+		if ( ! $document->status->is_numbered() ) {
+			return $link;
+		}
+
+		// The PDF is one click from the order, which is where somebody who has
+		// just packed the goods actually is.
+		return $link . ' <a href="' . esc_url( DocumentActions::pdf_url( $document ) ) . '" title="'
+			. esc_attr__( 'Download the PDF', 'oxyddt-for-woocommerce' ) . '">PDF</a>';
 	}
 
 	/**
@@ -168,39 +179,5 @@ final class OrderMetabox implements Registrable {
 		}
 
 		return 'shop_order';
-	}
-
-	/**
-	 * How far the order has been fulfilled, in words.
-	 *
-	 * @param FulfilmentStatus $status The status.
-	 * @return string
-	 */
-	private static function status_label( FulfilmentStatus $status ): string {
-		switch ( $status ) {
-			case FulfilmentStatus::Complete:
-				return __( 'Fully sent', 'oxyddt-for-woocommerce' );
-			case FulfilmentStatus::Partial:
-				return __( 'Partly sent', 'oxyddt-for-woocommerce' );
-			default:
-				return __( 'Nothing sent yet', 'oxyddt-for-woocommerce' );
-		}
-	}
-
-	/**
-	 * What a document's state is called.
-	 *
-	 * @param DocumentStatus $status The status.
-	 * @return string
-	 */
-	private static function document_status_label( DocumentStatus $status ): string {
-		switch ( $status ) {
-			case DocumentStatus::Issued:
-				return __( 'issued', 'oxyddt-for-woocommerce' );
-			case DocumentStatus::Cancelled:
-				return __( 'cancelled', 'oxyddt-for-woocommerce' );
-			default:
-				return __( 'draft', 'oxyddt-for-woocommerce' );
-		}
 	}
 }

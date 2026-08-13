@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Oxysoft\OxyDDT\Admin;
 
 use Oxysoft\OxyDDT\Audit\AuditLog;
+use Oxysoft\OxyDDT\Mail\DocumentMailer;
 use Oxysoft\OxyDDT\Domain\Causals;
 use Oxysoft\OxyDDT\Domain\Document;
 use Oxysoft\OxyDDT\Domain\DocumentRepositoryInterface;
@@ -17,6 +18,7 @@ use Oxysoft\OxyDDT\Domain\DocumentStatus;
 use Oxysoft\OxyDDT\Domain\Fulfilment;
 use Oxysoft\OxyDDT\Domain\Line;
 use Oxysoft\OxyDDT\Domain\Transport;
+use Oxysoft\OxyDDT\Infrastructure\Labels;
 use Oxysoft\OxyDDT\Infrastructure\Registrable;
 use Oxysoft\OxyDDT\Issuing\IssueException;
 use Oxysoft\OxyDDT\Issuing\Issuer;
@@ -80,6 +82,13 @@ final class EditScreen implements Registrable {
 	private Issuer $issuer;
 
 	/**
+	 * The mailer, for the wording of the email.
+	 *
+	 * @var DocumentMailer
+	 */
+	private DocumentMailer $mailer;
+
+	/**
 	 * Build the screen.
 	 *
 	 * @param DocumentRepositoryInterface $documents  The document store.
@@ -87,19 +96,22 @@ final class EditScreen implements Registrable {
 	 * @param OrderFulfilment             $fulfilment What is left of an order.
 	 * @param AuditLog                    $log        The register.
 	 * @param Issuer                      $issuer     Issuing and cancelling.
+	 * @param DocumentMailer              $mailer     The mailer.
 	 */
 	public function __construct(
 		DocumentRepositoryInterface $documents,
 		DocumentFactory $drafts,
 		OrderFulfilment $fulfilment,
 		AuditLog $log,
-		Issuer $issuer
+		Issuer $issuer,
+		DocumentMailer $mailer
 	) {
 		$this->documents  = $documents;
 		$this->drafts     = $drafts;
 		$this->fulfilment = $fulfilment;
 		$this->log        = $log;
 		$this->issuer     = $issuer;
+		$this->mailer     = $mailer;
 	}
 
 	/**
@@ -774,7 +786,7 @@ final class EditScreen implements Registrable {
 
 		foreach ( $known as $code ) {
 			echo '<option value="' . esc_attr( $code ) . '"' . selected( $causal, $code, false ) . '>'
-				. esc_html( self::causal_label( $code ) ) . '</option>';
+				. esc_html( Labels::causal( $code ) ) . '</option>';
 		}
 
 		echo '</select>';
@@ -805,7 +817,7 @@ final class EditScreen implements Registrable {
 
 		foreach ( Transport::carriers() as $by ) {
 			echo '<option value="' . esc_attr( $by ) . '"' . selected( $transport->by, $by, false ) . '>'
-				. esc_html( self::carrier_label( $by ) ) . '</option>';
+				. esc_html( Labels::carrier( $by ) ) . '</option>';
 		}
 
 		echo '</select></td></tr>';
@@ -821,7 +833,7 @@ final class EditScreen implements Registrable {
 
 		foreach ( Transport::carriages() as $carriage ) {
 			echo '<option value="' . esc_attr( $carriage ) . '"' . selected( $transport->carriage, $carriage, false ) . '>'
-				. esc_html( self::carriage_label( $carriage ) ) . '</option>';
+				. esc_html( Labels::carriage( $carriage ) ) . '</option>';
 		}
 
 		echo '</select></td></tr>';
@@ -894,6 +906,8 @@ final class EditScreen implements Registrable {
 
 		echo '</tbody></table>';
 
+		$this->render_actions( $document );
+
 		if ( $cancelled || ! current_user_can( Capabilities::CANCEL ) ) {
 			return;
 		}
@@ -956,15 +970,11 @@ final class EditScreen implements Registrable {
 	/**
 	 * A quantity, as a person writes it.
 	 *
-	 * Three decimals, and no trailing zeros: "4", not "4.000".
-	 *
 	 * @param float $quantity The quantity.
 	 * @return string
 	 */
 	public static function quantity( float $quantity ): string {
-		$formatted = number_format( $quantity, 3, '.', '' );
-
-		return false === strpos( $formatted, '.' ) ? $formatted : rtrim( rtrim( $formatted, '0' ), '.' );
+		return Labels::quantity( $quantity );
 	}
 
 	/**
@@ -983,55 +993,50 @@ final class EditScreen implements Registrable {
 	}
 
 	/**
-	 * What a reason for transport is called.
+	 * What a delivery note can be done with once it is issued.
 	 *
-	 * @param string $code The code.
-	 * @return string
+	 * @param Document $document The document.
+	 * @return void
 	 */
-	public static function causal_label( string $code ): string {
-		$labels = array(
-			Causals::SALE              => __( 'Sale', 'oxyddt-for-woocommerce' ),
-			Causals::ON_APPROVAL       => __( 'On approval', 'oxyddt-for-woocommerce' ),
-			Causals::PROCESSING        => __( 'For processing', 'oxyddt-for-woocommerce' ),
-			Causals::REPAIR            => __( 'For repair', 'oxyddt-for-woocommerce' ),
-			Causals::RETURNED          => __( 'Return', 'oxyddt-for-woocommerce' ),
-			Causals::REPLACEMENT       => __( 'Replacement', 'oxyddt-for-woocommerce' ),
-			Causals::GIFT              => __( 'Gift', 'oxyddt-for-woocommerce' ),
-			Causals::INTERNAL_TRANSFER => __( 'Internal transfer', 'oxyddt-for-woocommerce' ),
-			Causals::OTHER             => __( 'Other', 'oxyddt-for-woocommerce' ),
-		);
+	private function render_actions( Document $document ): void {
+		echo '<p>';
+		echo '<a class="button button-primary" href="' . esc_url( DocumentActions::pdf_url( $document ) ) . '">'
+			. esc_html__( 'Download the PDF', 'oxyddt-for-woocommerce' ) . '</a> ';
+		echo '<a class="button" target="_blank" rel="noopener" href="'
+			. esc_url( DocumentActions::pdf_url( $document, true ) ) . '">'
+			. esc_html__( 'Open it to print', 'oxyddt-for-woocommerce' ) . '</a>';
+		echo '</p>';
 
-		return $labels[ $code ] ?? $code;
-	}
+		if ( ! current_user_can( Capabilities::SEND ) || ! $document->status->is_numbered() ) {
+			return;
+		}
 
-	/**
-	 * What "in whose care" reads as.
-	 *
-	 * @param string $by Who carries the goods.
-	 * @return string
-	 */
-	private static function carrier_label( string $by ): string {
-		$labels = array(
-			Transport::BY_SENDER    => __( 'The sender', 'oxyddt-for-woocommerce' ),
-			Transport::BY_RECIPIENT => __( 'The recipient', 'oxyddt-for-woocommerce' ),
-			Transport::BY_CARRIER   => __( 'A carrier', 'oxyddt-for-woocommerce' ),
-		);
+		$order_ids = $document->all_order_ids();
 
-		return $labels[ $by ] ?? $by;
-	}
+		echo '<h2>' . esc_html__( 'Send it', 'oxyddt-for-woocommerce' ) . '</h2>';
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+		wp_nonce_field( 'oxyddt_send_document' );
+		echo '<input type="hidden" name="action" value="oxyddt_send_document" />';
+		echo '<input type="hidden" name="document" value="' . esc_attr( (string) $document->id ) . '" />';
+		echo '<input type="hidden" name="order_id" value="' . esc_attr( (string) ( $order_ids[0] ?? 0 ) ) . '" />';
 
-	/**
-	 * What "carriage" reads as.
-	 *
-	 * @param string $carriage Who pays.
-	 * @return string
-	 */
-	private static function carriage_label( string $carriage ): string {
-		$labels = array(
-			Transport::CARRIAGE_PREPAID => __( 'Prepaid (the sender pays)', 'oxyddt-for-woocommerce' ),
-			Transport::CARRIAGE_FORWARD => __( 'Forward (the recipient pays)', 'oxyddt-for-woocommerce' ),
-		);
+		echo '<table class="form-table" role="presentation"><tbody>';
+		echo '<tr><th scope="row"><label for="oxyddt-to">' . esc_html__( 'To', 'oxyddt-for-woocommerce' ) . '</label></th><td>';
+		echo '<input type="email" id="oxyddt-to" name="to" class="regular-text" required value="'
+			. esc_attr( $document->parties->recipient->email ) . '" />';
+		echo '</td></tr>';
+		echo '<tr><th scope="row"><label for="oxyddt-subject">' . esc_html__( 'Subject', 'oxyddt-for-woocommerce' ) . '</label></th><td>';
+		echo '<input type="text" id="oxyddt-subject" name="subject" class="large-text" value="'
+			. esc_attr( $this->mailer->default_subject( $document ) ) . '" />';
+		echo '</td></tr>';
+		echo '<tr><th scope="row"><label for="oxyddt-message">' . esc_html__( 'Message', 'oxyddt-for-woocommerce' ) . '</label></th><td>';
+		echo '<textarea id="oxyddt-message" name="message" rows="6" class="large-text">'
+			. esc_textarea( $this->mailer->default_message( $document ) ) . '</textarea>';
+		echo '<p class="description">' . esc_html__( 'The PDF goes with it as an attachment.', 'oxyddt-for-woocommerce' ) . '</p>';
+		echo '</td></tr>';
+		echo '</tbody></table>';
 
-		return $labels[ $carriage ] ?? $carriage;
+		submit_button( __( 'Send the delivery note', 'oxyddt-for-woocommerce' ), 'secondary', 'submit', false );
+		echo '</form>';
 	}
 }

@@ -112,12 +112,30 @@ tre. La barra delle schede non si disegna finché ce n'è una sola.
 
 ## Scelte ancora da fare, con la raccomandazione
 
-**Motore PDF (sprint 5): dompdf.** LGPL 2.1, compatibile GPL, è quello che usa
-il plugin da 300.000 installazioni del settore, e prende HTML+CSS come sorgente:
-la personalizzazione del template dello §12 viene quasi gratis. Va **vendorato**
-nel pacchetto (niente dipendenze SaaS, niente Composer runtime). Alternative
-scartate: TCPDF (API a coordinate, template impossibili da personalizzare senza
-codice), mPDF (più pesante, stessa resa).
+**Motore PDF: dompdf, vendorato** (fatto nello sprint 5). LGPL 2.1, compatibile
+GPL, prende HTML+CSS come sorgente: la personalizzazione del template dello §12
+viene quasi gratis. Alternative scartate: TCPDF (API a coordinate, template
+impossibili da personalizzare senza codice), mPDF (più pesante, stessa resa).
+
+Due conseguenze pratiche:
+
+* `composer.json` e `composer.lock` **vengono spediti**, e il pacchetto si
+  costruisce con `git archive` + `composer install --no-dev`. Il job "package"
+  della CI fa esattamente questo e verifica che `vendor/dompdf/dompdf` ci sia e
+  che nessuna dipendenza di sviluppo si sia infilata dentro.
+* `isRemoteEnabled` è **spento** nel renderer. La pagina è costruita in parte da
+  quello che ha scritto un cliente: un documento che può scaricare URL mentre
+  viene renderizzato è una SSRF con passaggi in più.
+
+**Il PDF si genera una volta sola**, all'emissione, e si archivia con il suo
+SHA-256 in `wp-content/uploads/oxyddt/<anno>/`. Tutto il resto (download, stampa,
+allegato email) rilegge quel file: la copia del negozio e quella del cliente
+sono la stessa copia. Se il file sparisce (ripristino senza uploads, cambio
+host) viene ricostruito dallo snapshot e il registro lo annota.
+
+La cartella ha `.htaccess`, `web.config` e `index.php`, e ogni nome file finisce
+con venti caratteri casuali — ma la difesa vera è l'endpoint su `admin-post.php`
+che controlla capability e nonce prima di servire i byte.
 
 **FREE e PRO sono due plugin separati**, non uno con codice dormiente sbloccato
 da licenza: la linea guida 5 di wordpress.org vieta il trialware. `oxyddt-for-woocommerce`
@@ -131,7 +149,7 @@ e `oxyddt-for-woocommerce-pro`.
 | 2 | modello DDT, relazione ordine-DDT, snapshot cliente | ✅ |
 | 3 | creazione da ordine, quantità residue, evasione parziale | ✅ |
 | 4 | numerazione atomica, emissione, immutabilità, annullamento | ✅ |
-| 5 | PDF, download protetto, stampa, email | |
+| 5 | PDF, download protetto, stampa, email | ✅ |
 | 6 | registro, filtri, box nell'ordine | |
 | 7 | HPOS, test di concorrenza, sicurezza, prestazioni | |
 | 8 | i18n, documentazione, pacchetto per wordpress.org | |

@@ -32,7 +32,7 @@ final class Migrator {
 	/**
 	 * The schema version this code expects.
 	 */
-	public const TARGET_VERSION = 3;
+	public const TARGET_VERSION = 4;
 
 	/**
 	 * The audit log table, without the WordPress prefix.
@@ -150,6 +150,12 @@ final class Migrator {
 			3 => function (): void {
 				$this->create_sequences_table();
 			},
+			// dbDelta compares the definition with what is there and adds what is
+			// missing, so running the same CREATE TABLE again is how a column is
+			// added. The definition above now carries the two PDF columns.
+			4 => function (): void {
+				$this->create_documents_table();
+			},
 		);
 	}
 
@@ -253,6 +259,8 @@ final class Migrator {
 			cancelled_at datetime DEFAULT NULL,
 			cancelled_by bigint(20) unsigned NOT NULL DEFAULT 0,
 			cancel_reason text NULL,
+			pdf_path varchar(255) NOT NULL DEFAULT '',
+			pdf_hash char(64) NOT NULL DEFAULT '',
 			PRIMARY KEY  (id),
 			UNIQUE KEY document_number (series,sequence_year,sequence_number),
 			KEY status (status,document_date),

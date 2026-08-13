@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Oxysoft\OxyDDT;
 
+use Oxysoft\OxyDDT\Admin\DocumentActions;
 use Oxysoft\OxyDDT\Admin\EditScreen;
 use Oxysoft\OxyDDT\Admin\Menu;
 use Oxysoft\OxyDDT\Admin\NumberingScreen;
@@ -25,6 +26,13 @@ use Oxysoft\OxyDDT\Infrastructure\Container;
 use Oxysoft\OxyDDT\Infrastructure\Migrator;
 use Oxysoft\OxyDDT\Infrastructure\Registrable;
 use Oxysoft\OxyDDT\Infrastructure\SystemClock;
+use Oxysoft\OxyDDT\Infrastructure\Templates;
+use Oxysoft\OxyDDT\Mail\DocumentMailer;
+use Oxysoft\OxyDDT\Pdf\DocumentHtml;
+use Oxysoft\OxyDDT\Pdf\DompdfRenderer;
+use Oxysoft\OxyDDT\Pdf\PdfRendererInterface;
+use Oxysoft\OxyDDT\Pdf\PdfService;
+use Oxysoft\OxyDDT\Pdf\PdfStore;
 use Oxysoft\OxyDDT\Persistence\DocumentRepository;
 use Oxysoft\OxyDDT\Security\Capabilities;
 use Oxysoft\OxyDDT\Settings\Settings;
@@ -85,6 +93,31 @@ final class Plugin {
 	 * Service identifier of the numbering tab.
 	 */
 	public const NUMBERING_SCREEN = 'admin.numbering';
+
+	/**
+	 * Service identifier of the template loader.
+	 */
+	public const TEMPLATES = 'templates';
+
+	/**
+	 * Service identifier of the PDF engine.
+	 */
+	public const PDF_RENDERER = 'pdf.renderer';
+
+	/**
+	 * Service identifier of the PDF service.
+	 */
+	public const PDF = 'pdf';
+
+	/**
+	 * Service identifier of the mailer.
+	 */
+	public const MAILER = 'mail';
+
+	/**
+	 * Service identifier of the download, print and send endpoints.
+	 */
+	public const DOCUMENT_ACTIONS = 'admin.actions';
 
 	/**
 	 * Service identifier of the admin page that holds the tabs.
@@ -235,6 +268,47 @@ final class Plugin {
 			)
 		);
 
+		$container->set(
+			self::TEMPLATES,
+			static fn (): Templates => new Templates()
+		);
+
+		$container->set(
+			self::PDF_RENDERER,
+			static fn (): DompdfRenderer => new DompdfRenderer()
+		);
+
+		$container->set(
+			self::PDF,
+			static fn ( Container $c ): PdfService => new PdfService(
+				$c->get_typed( self::PDF_RENDERER, PdfRendererInterface::class ),
+				new PdfStore(),
+				new DocumentHtml( $c->get_typed( self::TEMPLATES, Templates::class ) ),
+				$c->get_typed( self::DOCUMENTS, DocumentRepositoryInterface::class ),
+				$c->get_typed( self::AUDIT, AuditLog::class )
+			)
+		);
+
+		$container->set(
+			self::MAILER,
+			static fn ( Container $c ): DocumentMailer => new DocumentMailer(
+				$c->get_typed( self::PDF, PdfService::class ),
+				$c->get_typed( self::AUDIT, AuditLog::class )
+			)
+		);
+
+		// Not admin-only: the endpoints answer on admin-post.php, and the hook
+		// that archives a PDF when a document is issued has to be there wherever
+		// the issuing happened — a REST call, WP-CLI, or a screen.
+		$container->set(
+			self::DOCUMENT_ACTIONS,
+			static fn ( Container $c ): DocumentActions => new DocumentActions(
+				$c->get_typed( self::DOCUMENTS, DocumentRepositoryInterface::class ),
+				$c->get_typed( self::PDF, PdfService::class ),
+				$c->get_typed( self::MAILER, DocumentMailer::class )
+			)
+		);
+
 		// Admin-only services are not built on a front-end request at all. The
 		// hooks they add would never fire there, and the objects would be built
 		// for nothing on every page view.
@@ -273,7 +347,8 @@ final class Plugin {
 					$c->get_typed( self::DOCUMENT_FACTORY, DocumentFactory::class ),
 					$c->get_typed( self::FULFILMENT, OrderFulfilment::class ),
 					$c->get_typed( self::AUDIT, AuditLog::class ),
-					$c->get_typed( self::ISSUER, Issuer::class )
+					$c->get_typed( self::ISSUER, Issuer::class ),
+					$c->get_typed( self::MAILER, DocumentMailer::class )
 				)
 			);
 

@@ -122,23 +122,44 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      # What ships is what `git archive` produces, so what ships is what gets
-      # checked. .gitattributes is easy to forget when a directory is added, and
-      # the plugin directory's reviewers are not.
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          extensions: mbstring, dom, gd
+          coverage: none
+          tools: composer:v2
+
+      # What ships is what `git archive` produces plus the libraries the plugin
+      # bundles, installed without anything from require-dev. .gitattributes is
+      # easy to forget when a directory is added, and the reviewers are not.
       - name: Build it the way the release does
         run: |
           mkdir -p build
           git archive --format=tar --prefix=oxyddt-for-woocommerce/ HEAD | tar -x -C build
+          composer install --no-dev --optimize-autoloader --no-interaction \
+            --working-dir=build/oxyddt-for-woocommerce
 
       - name: Nothing that belongs to development may be in it
         run: |
           status=0
-          for unwanted in vendor tests scripts docs .github composer.json phpunit.xml.dist phpcs.xml.dist phpstan.neon.dist README.md; do
+          for unwanted in tests scripts docs .github phpunit.xml.dist phpcs.xml.dist phpstan.neon.dist README.md; do
             if [ -e "build/oxyddt-for-woocommerce/${unwanted}" ]; then
               echo "::error::${unwanted} would be shipped to users."
               status=1
             fi
           done
+
+          for dev in vendor/phpunit vendor/squizlabs vendor/phpstan vendor/wp-phpunit vendor/yoast vendor/php-stubs; do
+            if [ -e "build/oxyddt-for-woocommerce/${dev}" ]; then
+              echo "::error::${dev} is a development dependency and would be shipped."
+              status=1
+            fi
+          done
+
+          # Hidden files are rejected by the plugin directory. Inside vendor they
+          # are somebody else's .gitattributes, so they are removed rather than
+          # reported: the alternative is patching six upstream packages.
+          find build/oxyddt-for-woocommerce/vendor -name '.*' -not -name '.' -prune -exec rm -rf {} + || true
 
           hidden="$(find build/oxyddt-for-woocommerce -name '.*' -not -name '.' -print)"
           if [ -n "${hidden}" ]; then
@@ -151,7 +172,8 @@ jobs:
       - name: And everything users need must be
         run: |
           status=0
-          for required in oxyddt-for-woocommerce.php readme.txt uninstall.php LICENSE src assets; do
+          for required in oxyddt-for-woocommerce.php readme.txt uninstall.php LICENSE src assets templates \
+                          vendor/autoload.php vendor/dompdf/dompdf; do
             if [ ! -e "build/oxyddt-for-woocommerce/${required}" ]; then
               echo "::error::${required} is missing from the package."
               status=1

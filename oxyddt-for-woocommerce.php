@@ -73,11 +73,34 @@ function plugin_url(): string {
 }
 
 /**
+ * Load the bundled libraries.
+ *
+ * One of them, dompdf, which turns a delivery note into a PDF without asking
+ * anybody's server for anything. It is shipped inside the plugin rather than
+ * fetched, because a shop must be able to print a document it has already
+ * issued on a day when nothing else works.
+ *
+ * Missing only when the plugin was assembled by hand from the repository. The
+ * PDF engine says so plainly in that case rather than failing halfway through a
+ * document.
+ *
+ * @return void
+ */
+function load_libraries(): void {
+	$autoloader = plugin_dir() . 'vendor/autoload.php';
+
+	if ( is_readable( $autoloader ) ) {
+		require_once $autoloader;
+	}
+}
+load_libraries();
+
+/**
  * Minimal PSR-4 autoloader.
  *
- * OxyDDT ships no third-party runtime dependency yet, so Composer's autoloader
- * is a development tool only and is never bundled. When the PDF engine arrives
- * in sprint 5 it will be vendored explicitly, not pulled in by this.
+ * The plugin's own classes load through this rather than through Composer's, so
+ * that the two are interchangeable and a mistake in the bundled autoloader can
+ * never take the plugin down with it.
  *
  * @param string $class_name Fully qualified class name.
  * @return void

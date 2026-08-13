@@ -7,6 +7,11 @@
 # Verbatim FSF text. Nothing here reformats it.
 /LICENSE -text
 
+# composer.json and composer.lock DO ship. The plugin bundles dompdf, and the
+# package is built by running `composer install --no-dev` against the archive:
+# without those two files there is nothing to build it from, and a reviewer
+# reading the plugin has no way to see what the vendor directory is.
+
 # Nothing below belongs in the distributed plugin.
 # .gitkeep included: they hold empty directories open in git, and the plugin
 # directory rejects hidden files outright.
@@ -19,8 +24,6 @@
 /.gitattributes export-ignore
 /.gitignore export-ignore
 /.editorconfig export-ignore
-/composer.json export-ignore
-/composer.lock export-ignore
 /phpcs.xml.dist export-ignore
 /phpstan.neon.dist export-ignore
 /phpunit.xml.dist export-ignore

@@ -45,6 +45,24 @@ interface DocumentRepositoryInterface {
 	public function for_order( int $order_id, bool $include_cancelled = true ): array;
 
 	/**
+	 * The archived PDF of a document, if it has one.
+	 *
+	 * @param int $id Row identifier.
+	 * @return array{path: string, hash: string}|null
+	 */
+	public function pdf_of( int $id ): ?array;
+
+	/**
+	 * Record where a document's PDF was archived, and what it was.
+	 *
+	 * @param int    $id   Row identifier.
+	 * @param string $path Path relative to the uploads directory.
+	 * @param string $hash SHA-256 of the file as it was written.
+	 * @return void
+	 */
+	public function set_pdf( int $id, string $path, string $hash ): void;
+
+	/**
 	 * Throw away a draft.
 	 *
 	 * Only a draft. An issued document is cancelled, never deleted: a number

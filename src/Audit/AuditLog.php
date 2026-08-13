@@ -61,6 +61,11 @@ final class AuditLog {
 	public const DOCUMENT_CANCELLED = 'document_cancelled';
 
 	/**
+	 * A document was emailed.
+	 */
+	public const DOCUMENT_SENT = 'document_sent';
+
+	/**
 	 * Somebody moved the counter.
 	 */
 	public const SEQUENCE_CHANGED = 'sequence_changed';
