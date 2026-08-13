@@ -40,7 +40,7 @@ function oxyddt_uninstall_site(): void {
 	global $wpdb;
 
 	foreach ( Migrator::tables() as $table ) {
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Table names cannot be placeholders; these are the plugin's own constants behind the site prefix. Dropping the plugin's own tables is what uninstalling means.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Table names cannot be placeholders; these are the plugin's own constants behind the site prefix. Dropping the plugin's own tables is what uninstalling means.
 		$wpdb->query( "DROP TABLE IF EXISTS {$table}" );
 	}
 

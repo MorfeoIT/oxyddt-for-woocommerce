@@ -17,6 +17,14 @@ use Oxysoft\OxyDDT\Infrastructure\Labels;
 
 defined( 'ABSPATH' ) || exit;
 
+/*
+ * The variables below look like globals to a static analyser and are not: this
+ * file is included from inside a method, so they live and die there. Prefixing
+ * them would make a template that shops copy into their theme harder to read for
+ * no gain, which is the trade WooCommerce's own templates make too.
+ */
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedVariableFound
+
 /**
  * The document being printed.
  *

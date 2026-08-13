@@ -28,6 +28,7 @@ use Oxysoft\OxyDDT\Infrastructure\Migrator;
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
 // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 // phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
+// phpcs:disable PluginCheck.Security.DirectDB.UnescapedDBParameter
 // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 
 /**
