@@ -14,6 +14,7 @@ use Oxysoft\OxyDDT\Admin\EditScreen;
 use Oxysoft\OxyDDT\Admin\Menu;
 use Oxysoft\OxyDDT\Admin\NumberingScreen;
 use Oxysoft\OxyDDT\Admin\OrderMetabox;
+use Oxysoft\OxyDDT\Admin\RegisterScreen;
 use Oxysoft\OxyDDT\Admin\Screen;
 use Oxysoft\OxyDDT\Admin\SettingsScreen;
 use Oxysoft\OxyDDT\Audit\AuditLog;
@@ -88,6 +89,11 @@ final class Plugin {
 	 * Service identifier of the issuer.
 	 */
 	public const ISSUER = 'documents.issuer';
+
+	/**
+	 * Service identifier of the register tab.
+	 */
+	public const REGISTER_SCREEN = 'admin.register';
 
 	/**
 	 * Service identifier of the numbering tab.
@@ -326,6 +332,16 @@ final class Plugin {
 					$c->get_typed( self::SETTINGS, Settings::class ),
 					$c->get_typed( self::SCREEN, Screen::class ),
 					$c->get_typed( self::AUDIT, AuditLog::class )
+				)
+			);
+
+			// Declared first, so that the register is the first tab: it is what
+			// somebody opening "WooCommerce → DDT" came to see.
+			$container->set(
+				self::REGISTER_SCREEN,
+				static fn ( Container $c ): RegisterScreen => new RegisterScreen(
+					$c->get_typed( self::DOCUMENTS, DocumentRepositoryInterface::class ),
+					$c->get_typed( self::SCREEN, Screen::class )
 				)
 			);
 

@@ -45,6 +45,17 @@ interface DocumentRepositoryInterface {
 	public function for_order( int $order_id, bool $include_cancelled = true ): array;
 
 	/**
+	 * The register: documents matching a query, and how many there are in all.
+	 *
+	 * The count is of everything that matched, not of what came back, because
+	 * the screen has to say "page 2 of 7" without asking a second time.
+	 *
+	 * @param DocumentQuery $query What is being looked for.
+	 * @return array{items: list<Document>, total: int}
+	 */
+	public function search( DocumentQuery $query ): array;
+
+	/**
 	 * The archived PDF of a document, if it has one.
 	 *
 	 * @param int $id Row identifier.

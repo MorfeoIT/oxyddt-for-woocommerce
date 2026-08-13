@@ -11,6 +11,7 @@ namespace Oxysoft\OxyDDT\Persistence;
 
 use Oxysoft\OxyDDT\Domain\Document;
 use Oxysoft\OxyDDT\Domain\DocumentNumber;
+use Oxysoft\OxyDDT\Domain\DocumentQuery;
 use Oxysoft\OxyDDT\Domain\DocumentRepositoryInterface;
 use Oxysoft\OxyDDT\Domain\DocumentStatus;
 use Oxysoft\OxyDDT\Domain\Lifecycle;
@@ -27,10 +28,20 @@ use Oxysoft\OxyDDT\Infrastructure\Migrator;
  * placeholders. Caching is deliberately absent: these rows are read when
  * somebody opens a document and written when somebody saves one, and a stale
  * delivery note is not a performance problem worth having.
+ *
+ * The register's query is built up from pieces because its filters are optional:
+ * a WHERE with nine conditions written out nine times would be nine places to
+ * make the same mistake. Every *value* still goes through a placeholder — what
+ * is concatenated is SQL written here, in this file, and never anything from a
+ * request. The sniff cannot follow a variable into prepare() and says so; the
+ * rule it is protecting is kept by hand and is worth reading the search() method
+ * to confirm.
  */
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
 // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
+// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
 
 /*
  * The exceptions here carry a document identifier and the database's own error
@@ -226,6 +237,133 @@ final class DocumentRepository implements DocumentRepositoryInterface {
 		}
 
 		return $documents_found;
+	}
+
+	/**
+	 * The register: documents matching a query, and how many there are in all.
+	 *
+	 * Every value goes in through a placeholder. The pieces of SQL around them
+	 * are literals written here — never anything from a request — which is what
+	 * makes a query built up in parts safe, and why the sniff is turned off at
+	 * the top of this file rather than argued with here.
+	 *
+	 * @param DocumentQuery $query What is being looked for.
+	 * @return array{items: list<Document>, total: int}
+	 */
+	public function search( DocumentQuery $query ): array {
+		global $wpdb;
+
+		$documents = Migrator::table( Migrator::TABLE_DOCUMENTS );
+		$links     = Migrator::table( Migrator::TABLE_ORDERS );
+
+		$where = array( '1=1' );
+		$args  = array();
+
+		if ( '' !== $query->search ) {
+			// Number, customer or order: the three things somebody has in their
+			// hand when they come looking. A wildcard on both sides because "125"
+			// has to find "A/125/2026".
+			$like = '%' . $wpdb->esc_like( $query->search ) . '%';
+
+			$where[] = '( number LIKE %s OR recipient_name LIKE %s OR id IN ( SELECT document_id FROM ' . $links . ' WHERE order_id = %d ) )';
+			$args[]  = $like;
+			$args[]  = $like;
+			$args[]  = (int) $query->search;
+		}
+
+		if ( null !== $query->year ) {
+			$where[] = 'YEAR( document_date ) = %d';
+			$args[]  = $query->year;
+		}
+
+		if ( null !== $query->month ) {
+			$where[] = 'MONTH( document_date ) = %d';
+			$args[]  = $query->month;
+		}
+
+		if ( $query->order_id > 0 ) {
+			$where[] = 'id IN ( SELECT document_id FROM ' . $links . ' WHERE order_id = %d )';
+			$args[]  = $query->order_id;
+		}
+
+		if ( $query->customer_id > 0 ) {
+			$where[] = 'customer_id = %d';
+			$args[]  = $query->customer_id;
+		}
+
+		if ( '' !== $query->causal ) {
+			$where[] = 'causal = %s';
+			$args[]  = $query->causal;
+		}
+
+		if ( '' !== $query->carrier ) {
+			$where[] = 'carrier_name LIKE %s';
+			$args[]  = '%' . $wpdb->esc_like( $query->carrier ) . '%';
+		}
+
+		if ( null !== $query->status ) {
+			$where[] = 'status = %s';
+			$args[]  = $query->status->value;
+		}
+
+		if ( null !== $query->number_from ) {
+			$where[] = 'sequence_number >= %d';
+			$args[]  = $query->number_from;
+		}
+
+		if ( null !== $query->number_to ) {
+			$where[] = 'sequence_number <= %d';
+			$args[]  = $query->number_to;
+		}
+
+		$conditions = implode( ' AND ', $where );
+
+		$order = DocumentQuery::BY_NUMBER === $query->order_by
+			? 'sequence_year %1$s, sequence_number %1$s, id %1$s'
+			: 'document_date %1$s, id %1$s';
+
+		// The direction is one of two literals chosen here, never a value from a
+		// request: DocumentQuery only ever answers ascending or not.
+		$order = sprintf( $order, $query->ascending ? 'ASC' : 'DESC' );
+
+		$total = (int) $wpdb->get_var(
+			array() === $args
+				? "SELECT COUNT(*) FROM {$documents} WHERE {$conditions}"
+				: $wpdb->prepare( "SELECT COUNT(*) FROM {$documents} WHERE {$conditions}", $args )
+		);
+
+		$sql = "SELECT * FROM {$documents} WHERE {$conditions} ORDER BY {$order} LIMIT %d OFFSET %d";
+
+		/**
+		 * The rows.
+		 *
+		 * @var list<array<string, mixed>> $rows
+		 */
+		$rows = (array) $wpdb->get_results(
+			$wpdb->prepare( $sql, array_merge( $args, array( $query->per_page, $query->offset() ) ) ),
+			ARRAY_A
+		);
+
+		$ids = array();
+
+		foreach ( $rows as $row ) {
+			$ids[] = isset( $row['id'] ) ? (int) $row['id'] : 0;
+		}
+
+		$lines = $this->lines_for( $ids );
+		$owned = $this->order_links_for( $ids );
+
+		$items = array();
+
+		foreach ( $rows as $row ) {
+			$id      = isset( $row['id'] ) ? (int) $row['id'] : 0;
+			$items[] = $this->from_row( $row, $lines[ $id ] ?? array(), $owned[ $id ] ?? array() );
+		}
+
+		return array(
+			'items' => $items,
+			'total' => $total,
+		);
 	}
 
 	/**

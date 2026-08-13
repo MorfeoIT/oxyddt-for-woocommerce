@@ -5,6 +5,22 @@ read; this one is for whoever works on the plugin.
 
 ## [Unreleased]
 
+### Sprint 6 — the register, and the box on the order
+
+* WooCommerce → DDT opens on the register: number, date, customer, order, place
+  of delivery, reason, carrier, state and the PDF, newest first.
+* Filters for the questions people actually ask — the delivery notes of March, a
+  range of numbers for the accountant, everything sent by one carrier, only the
+  cancelled ones — and a search over the three things somebody has in their hand:
+  a number, a customer's name, an order.
+* The filters are a GET form, so a filtered register is a link somebody can send
+  to a colleague. Turning the page keeps them.
+* Every filter is read once into a value object that fixes its shape — a page of
+  at least one, a month between one and twelve, a sort column from a list of two
+  — and the query trusts nothing else.
+* The order box now says how many lines are complete as well as how many pieces
+  have gone: nine of ten pieces sent can still be four lines short.
+
 ### Sprint 5 — the PDF, the download, the email
 
 * A4 delivery note rendered by a bundled dompdf, with the shop's logo embedded

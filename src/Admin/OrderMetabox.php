@@ -97,10 +97,26 @@ final class OrderMetabox implements Registrable {
 			sprintf(
 				/* translators: 1: quantity sent, 2: quantity ordered. */
 				__( '%1$s of %2$s sent', 'oxyddt-for-woocommerce' ),
-				EditScreen::quantity( $fulfilment->total_shipped() ),
-				EditScreen::quantity( $fulfilment->total_ordered() )
+				Labels::quantity( $fulfilment->total_shipped() ),
+				Labels::quantity( $fulfilment->total_ordered() )
 			)
 		);
+
+		// Quantities and lines are different questions, and a warehouse asks the
+		// second one: nine of ten pieces sent can still be four lines short.
+		$lines = count( $fulfilment->lines() );
+
+		if ( $lines > 0 ) {
+			echo '<br />' . esc_html(
+				sprintf(
+					/* translators: 1: how many order lines are complete, 2: how many there are. */
+					__( '%1$d of %2$d lines complete', 'oxyddt-for-woocommerce' ),
+					$fulfilment->completed_lines(),
+					$lines
+				)
+			);
+		}
+
 		echo '</p>';
 
 		if ( array() === $documents ) {

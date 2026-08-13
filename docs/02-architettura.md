@@ -150,7 +150,7 @@ e `oxyddt-for-woocommerce-pro`.
 | 3 | creazione da ordine, quantità residue, evasione parziale | ✅ |
 | 4 | numerazione atomica, emissione, immutabilità, annullamento | ✅ |
 | 5 | PDF, download protetto, stampa, email | ✅ |
-| 6 | registro, filtri, box nell'ordine | |
+| 6 | registro, filtri, box nell'ordine | ✅ |
 | 7 | HPOS, test di concorrenza, sicurezza, prestazioni | |
 | 8 | i18n, documentazione, pacchetto per wordpress.org | |
 
