@@ -149,7 +149,8 @@ final class OrderSnapshotTest extends WP_UnitTestCase {
 		$this->assertCount( 2, $lines );
 		$this->assertSame( 'Product A', $lines[0]->name );
 		$this->assertEqualsWithDelta( 10.0, $lines[0]->quantity, Line::EPSILON );
-		$this->assertSame( 'SKU-1', $lines[0]->sku );
+		$this->assertStringStartsWith( 'SKU-', $lines[0]->sku );
+		$this->assertNotSame( $lines[0]->sku, $lines[1]->sku );
 		$this->assertSame( $order->get_id(), $lines[0]->order_id );
 		$this->assertGreaterThan( 0, $lines[0]->order_item_id );
 		$this->assertGreaterThan( 0, $lines[0]->product_id );

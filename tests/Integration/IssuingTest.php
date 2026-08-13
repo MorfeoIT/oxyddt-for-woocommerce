@@ -204,18 +204,20 @@ final class IssuingTest extends WP_UnitTestCase {
 
 		$this->sequences->set_next( '', 2026, 125 );
 
+		$theirs_draft = $this->draft( '2026-08-13' );
+
 		// The other request, arriving first and writing document 125.
 		$theirs = $this->documents->save(
 			new Document(
-				0,
+				$theirs_draft->id,
 				DocumentStatus::Issued,
 				DocumentNumber::assigned( '125/2026', '', 2026, 125 ),
 				'2026-08-13',
-				$this->draft( '2026-08-13' )->parties,
-				$this->draft( '2026-08-13' )->transport,
+				$theirs_draft->parties,
+				$theirs_draft->transport,
 				'sale',
-				$this->draft( '2026-08-13' )->lines,
-				array()
+				$theirs_draft->lines,
+				$theirs_draft->order_ids
 			)
 		);
 

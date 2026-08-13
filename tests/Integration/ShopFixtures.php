@@ -22,17 +22,31 @@ use WC_Product_Simple;
 trait ShopFixtures {
 
 	/**
+	 * How many products the run has created.
+	 *
+	 * WooCommerce refuses a duplicate SKU, and a test that builds two orders
+	 * would otherwise fail on the second — not because anything is wrong with the
+	 * plugin, but because the fixture lied about being a shop. The counter never
+	 * goes back, even though the rows do when a test rolls back.
+	 *
+	 * @var int
+	 */
+	private static int $products_made = 0;
+
+	/**
 	 * A product on the shelf.
 	 *
-	 * @param string $name  What it is called.
-	 * @param string $sku   Its code.
-	 * @param string $price What it costs.
+	 * @param string $name   What it is called.
+	 * @param string $prefix The start of its code; a number is added to keep it unique.
+	 * @param string $price  What it costs.
 	 * @return WC_Product_Simple
 	 */
-	protected function a_product( string $name = 'Product A', string $sku = 'A-1', string $price = '10.00' ): WC_Product_Simple {
+	protected function a_product( string $name = 'Product A', string $prefix = 'SKU', string $price = '10.00' ): WC_Product_Simple {
+		++self::$products_made;
+
 		$product = new WC_Product_Simple();
 		$product->set_name( $name );
-		$product->set_sku( $sku );
+		$product->set_sku( $prefix . '-' . self::$products_made );
 		$product->set_regular_price( $price );
 		$product->save();
 
@@ -59,11 +73,8 @@ trait ShopFixtures {
 		$order->set_billing_email( 'ordini@example.test' );
 		$order->set_billing_phone( '+39 011 1234567' );
 
-		$sku = 1;
-
 		foreach ( $quantities as $name => $quantity ) {
-			$order->add_product( $this->a_product( (string) $name, 'SKU-' . $sku ), (int) $quantity );
-			++$sku;
+			$order->add_product( $this->a_product( (string) $name ), (int) $quantity );
 		}
 
 		$order->save();
