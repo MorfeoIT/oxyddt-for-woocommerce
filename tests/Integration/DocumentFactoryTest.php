@@ -31,7 +31,7 @@ final class DocumentFactoryTest extends WP_UnitTestCase {
 	 *
 	 * @var DocumentFactory
 	 */
-	private DocumentFactory $factory;
+	private DocumentFactory $drafts;
 
 	/**
 	 * The store.
@@ -64,7 +64,7 @@ final class DocumentFactoryTest extends WP_UnitTestCase {
 			)
 		);
 
-		$this->factory   = new DocumentFactory( $settings, new SystemClock() );
+		$this->drafts    = new DocumentFactory( $settings, new SystemClock() );
 		$this->documents = new DocumentRepository( new SystemClock() );
 	}
 
@@ -82,7 +82,7 @@ final class DocumentFactoryTest extends WP_UnitTestCase {
 			)
 		);
 
-		$draft = $this->factory->draft_from_order( $order );
+		$draft = $this->drafts->draft_from_order( $order );
 
 		$this->assertTrue( $draft->is_editable() );
 		$this->assertFalse( $draft->number->is_assigned(), 'a draft must not reserve a number' );
@@ -102,7 +102,7 @@ final class DocumentFactoryTest extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_the_lines_start_at_the_full_ordered_quantity(): void {
-		$draft = $this->factory->draft_from_order( $this->an_order( array( 'Product A' => 10.0 ) ) );
+		$draft = $this->drafts->draft_from_order( $this->an_order( array( 'Product A' => 10.0 ) ) );
 
 		$this->assertEqualsWithDelta( 10.0, $draft->total_quantity(), Line::EPSILON );
 	}
@@ -136,7 +136,7 @@ final class DocumentFactoryTest extends WP_UnitTestCase {
 	 */
 	public function test_a_stored_document_does_not_follow_the_order(): void {
 		$order = $this->an_order( array( 'Product A' => 10.0 ) );
-		$saved = $this->documents->save( $this->factory->draft_from_order( $order ) );
+		$saved = $this->documents->save( $this->drafts->draft_from_order( $order ) );
 
 		$order = wc_get_order( $order->get_id() );
 		$order->set_billing_company( 'Bianchi S.r.l., formerly S.p.A.' );
@@ -169,7 +169,7 @@ final class DocumentFactoryTest extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_a_stored_document_does_not_follow_the_settings(): void {
-		$saved = $this->documents->save( $this->factory->draft_from_order( $this->an_order() ) );
+		$saved = $this->documents->save( $this->drafts->draft_from_order( $this->an_order() ) );
 
 		$settings = new Settings();
 		$settings->update_company(
@@ -204,8 +204,8 @@ final class DocumentFactoryTest extends WP_UnitTestCase {
 	public function test_an_order_finds_every_document_made_from_it(): void {
 		$order = $this->an_order( array( 'Product A' => 10.0 ) );
 
-		$first  = $this->documents->save( $this->factory->draft_from_order( $order ) );
-		$second = $this->documents->save( $this->factory->draft_from_order( $order ) );
+		$first  = $this->documents->save( $this->drafts->draft_from_order( $order ) );
+		$second = $this->documents->save( $this->drafts->draft_from_order( $order ) );
 
 		$found = $this->documents->for_order( $order->get_id() );
 
@@ -224,7 +224,7 @@ final class DocumentFactoryTest extends WP_UnitTestCase {
 
 		add_filter( 'oxyddt_draft_from_order', $filter );
 
-		$draft = $this->factory->draft_from_order( $this->an_order() );
+		$draft = $this->drafts->draft_from_order( $this->an_order() );
 
 		remove_filter( 'oxyddt_draft_from_order', $filter );
 
