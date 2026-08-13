@@ -13,10 +13,13 @@ use Oxysoft\OxyDDT\Audit\AuditLog;
 use Oxysoft\OxyDDT\Domain\Causals;
 use Oxysoft\OxyDDT\Domain\Document;
 use Oxysoft\OxyDDT\Domain\DocumentRepositoryInterface;
+use Oxysoft\OxyDDT\Domain\DocumentStatus;
 use Oxysoft\OxyDDT\Domain\Fulfilment;
 use Oxysoft\OxyDDT\Domain\Line;
 use Oxysoft\OxyDDT\Domain\Transport;
 use Oxysoft\OxyDDT\Infrastructure\Registrable;
+use Oxysoft\OxyDDT\Issuing\IssueException;
+use Oxysoft\OxyDDT\Issuing\Issuer;
 use Oxysoft\OxyDDT\Security\Capabilities;
 use Oxysoft\OxyDDT\WooCommerce\DocumentFactory;
 use Oxysoft\OxyDDT\WooCommerce\OrderFulfilment;
@@ -70,23 +73,33 @@ final class EditScreen implements Registrable {
 	private AuditLog $log;
 
 	/**
+	 * Issuing and cancelling.
+	 *
+	 * @var Issuer
+	 */
+	private Issuer $issuer;
+
+	/**
 	 * Build the screen.
 	 *
 	 * @param DocumentRepositoryInterface $documents  The document store.
 	 * @param DocumentFactory             $drafts     The order-to-draft factory.
 	 * @param OrderFulfilment             $fulfilment What is left of an order.
 	 * @param AuditLog                    $log        The register.
+	 * @param Issuer                      $issuer     Issuing and cancelling.
 	 */
 	public function __construct(
 		DocumentRepositoryInterface $documents,
 		DocumentFactory $drafts,
 		OrderFulfilment $fulfilment,
-		AuditLog $log
+		AuditLog $log,
+		Issuer $issuer
 	) {
 		$this->documents  = $documents;
 		$this->drafts     = $drafts;
 		$this->fulfilment = $fulfilment;
 		$this->log        = $log;
+		$this->issuer     = $issuer;
 	}
 
 	/**
@@ -97,6 +110,7 @@ final class EditScreen implements Registrable {
 	public function register(): void {
 		add_action( 'admin_post_oxyddt_save_document', array( $this, 'handle_save' ) );
 		add_action( 'admin_post_oxyddt_delete_document', array( $this, 'handle_delete' ) );
+		add_action( 'admin_post_oxyddt_cancel_document', array( $this, 'handle_cancel' ) );
 	}
 
 	/**
@@ -206,7 +220,18 @@ final class EditScreen implements Registrable {
 		$this->render_header( $document );
 		$this->render_transport( null === $document ? new Transport() : $document->transport );
 
-		submit_button( __( 'Save draft', 'oxyddt-for-woocommerce' ) );
+		echo '<p class="submit">';
+		submit_button( __( 'Save draft', 'oxyddt-for-woocommerce' ), 'secondary', 'save', false );
+
+		if ( current_user_can( Capabilities::ISSUE ) ) {
+			echo ' ';
+			submit_button( __( 'Save and issue', 'oxyddt-for-woocommerce' ), 'primary', 'issue', false );
+			echo '<p class="description">'
+				. esc_html__( 'Issuing takes the next number and closes the document. From then on it cannot be changed, only cancelled.', 'oxyddt-for-woocommerce' )
+				. '</p>';
+		}
+
+		echo '</p>';
 		echo '</form>';
 
 		if ( null !== $document ) {
@@ -293,6 +318,11 @@ final class EditScreen implements Registrable {
 			$saved->id
 		);
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_admin_referer() above.
+		if ( isset( $_POST['issue'] ) ) {
+			$this->issue( $saved, $order_id );
+		}
+
 		$this->back_to(
 			$order_id,
 			$saved->id,
@@ -301,6 +331,146 @@ final class EditScreen implements Registrable {
 				? __( 'Draft saved.', 'oxyddt-for-woocommerce' )
 				: __( 'Draft saved, for more than the order has left. That was allowed because you are permitted to override it.', 'oxyddt-for-woocommerce' )
 		);
+	}
+
+	/**
+	 * Take the next number and close the document.
+	 *
+	 * @param Document $draft    The saved draft.
+	 * @param int      $order_id The order, for the trip back.
+	 * @return never
+	 */
+	private function issue( Document $draft, int $order_id ): never {
+		if ( ! current_user_can( Capabilities::ISSUE ) ) {
+			$this->back_to(
+				$order_id,
+				$draft->id,
+				'error',
+				__( 'Saved as a draft: you are not allowed to issue delivery notes.', 'oxyddt-for-woocommerce' )
+			);
+		}
+
+		try {
+			$issued = $this->issuer->issue( $draft );
+		} catch ( IssueException $e ) {
+			$this->back_to(
+				$order_id,
+				$draft->id,
+				'error',
+				sprintf(
+					/* translators: %s: what is missing, as a list. */
+					__( 'Saved as a draft, but not issued: %s', 'oxyddt-for-woocommerce' ),
+					implode( ', ', self::describe_codes( $e->codes() ) )
+				)
+			);
+		}
+
+		$this->back_to(
+			$order_id,
+			$issued->id,
+			'success',
+			sprintf(
+				/* translators: %s: the number of the delivery note. */
+				__( 'Issued as %s. It cannot be changed now, only cancelled.', 'oxyddt-for-woocommerce' ),
+				$issued->number->formatted
+			)
+		);
+	}
+
+	/**
+	 * Void an issued document.
+	 *
+	 * @return void
+	 */
+	public function handle_cancel(): void {
+		check_admin_referer( 'oxyddt_cancel_document' );
+
+		if ( ! current_user_can( Capabilities::CANCEL ) ) {
+			wp_die(
+				esc_html__( 'You are not allowed to cancel delivery notes.', 'oxyddt-for-woocommerce' ),
+				'',
+				array( 'response' => 403 )
+			);
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_admin_referer() above.
+		$document_id = isset( $_POST['document'] ) ? absint( wp_unslash( $_POST['document'] ) ) : 0;
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_admin_referer() above.
+		$order_id = isset( $_POST['order_id'] ) ? absint( wp_unslash( $_POST['order_id'] ) ) : 0;
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_admin_referer() above.
+		$reason = isset( $_POST['reason'] ) ? sanitize_textarea_field( wp_unslash( $_POST['reason'] ) ) : '';
+
+		$document = $this->documents->find( $document_id );
+
+		if ( null === $document ) {
+			$this->back_to( $order_id, 0, 'error', __( 'That delivery note does not exist.', 'oxyddt-for-woocommerce' ) );
+		}
+
+		try {
+			$cancelled = $this->issuer->cancel( $document, $reason );
+		} catch ( IssueException $e ) {
+			$this->back_to(
+				$order_id,
+				$document_id,
+				'error',
+				implode( ', ', self::describe_codes( $e->codes() ) )
+			);
+		}
+
+		$this->back_to(
+			$order_id,
+			$cancelled->id,
+			'success',
+			sprintf(
+				/* translators: %s: the number of the delivery note. */
+				__( 'Delivery note %s is cancelled. Its quantities are back on the order.', 'oxyddt-for-woocommerce' ),
+				$cancelled->number->formatted
+			)
+		);
+	}
+
+	/**
+	 * Turn refusal codes into something readable.
+	 *
+	 * @param list<string> $codes The codes.
+	 * @return list<string>
+	 */
+	private static function describe_codes( array $codes ): array {
+		$messages = array(
+			'already_issued'   => __( 'it has already been issued', 'oxyddt-for-woocommerce' ),
+			'not_issued'       => __( 'only an issued delivery note can be cancelled', 'oxyddt-for-woocommerce' ),
+			'reason_missing'   => __( 'a cancellation has to say why', 'oxyddt-for-woocommerce' ),
+			'numbering_failed' => __( 'a number could not be settled on — try again', 'oxyddt-for-woocommerce' ),
+			'lines_missing'    => __( 'nothing is on it', 'oxyddt-for-woocommerce' ),
+			'causal_missing'   => __( 'the reason for transport is missing', 'oxyddt-for-woocommerce' ),
+			'date_missing'     => __( 'the date is missing', 'oxyddt-for-woocommerce' ),
+		);
+
+		$described = array();
+
+		foreach ( $codes as $code ) {
+			if ( isset( $messages[ $code ] ) ) {
+				$described[] = $messages[ $code ];
+
+				continue;
+			}
+
+			if ( 0 === strpos( $code, 'sender.' ) ) {
+				$described[] = __( 'the sender is not complete — see Settings', 'oxyddt-for-woocommerce' );
+
+				continue;
+			}
+
+			if ( 0 === strpos( $code, 'recipient.' ) || 0 === strpos( $code, 'destination.' ) ) {
+				$described[] = __( 'the recipient or the destination is not complete', 'oxyddt-for-woocommerce' );
+
+				continue;
+			}
+
+			$described[] = $code;
+		}
+
+		return array_values( array_unique( $described ) );
 	}
 
 	/**
@@ -685,9 +855,32 @@ final class EditScreen implements Registrable {
 	 * @return void
 	 */
 	private function render_closed( Document $document ): void {
-		echo '<div class="notice notice-warning"><p>'
-			. esc_html__( 'This delivery note has been issued. It cannot be changed: cancel it and prepare another.', 'oxyddt-for-woocommerce' )
-			. '</p></div>';
+		$cancelled = DocumentStatus::Cancelled === $document->status;
+
+		echo '<div class="notice notice-' . ( $cancelled ? 'error' : 'warning' ) . '"><p>';
+
+		echo $cancelled
+			? esc_html(
+				sprintf(
+					/* translators: %s: the reason it was cancelled. */
+					__( 'This delivery note has been cancelled: %s', 'oxyddt-for-woocommerce' ),
+					$document->lifecycle->cancel_reason
+				)
+			)
+			: esc_html__( 'This delivery note has been issued. It cannot be changed: cancel it and prepare another.', 'oxyddt-for-woocommerce' );
+
+		echo '</p></div>';
+
+		echo '<table class="form-table" role="presentation"><tbody>';
+		echo '<tr><th scope="row">' . esc_html__( 'Number', 'oxyddt-for-woocommerce' ) . '</th><td><code>'
+			. esc_html( $document->number->formatted ) . '</code></td></tr>';
+		echo '<tr><th scope="row">' . esc_html__( 'Date', 'oxyddt-for-woocommerce' ) . '</th><td>'
+			. esc_html( (string) $document->document_date ) . '</td></tr>';
+		echo '<tr><th scope="row">' . esc_html__( 'Issued', 'oxyddt-for-woocommerce' ) . '</th><td>'
+			. esc_html( (string) $document->lifecycle->issued_at ) . '</td></tr>';
+		echo '<tr><th scope="row">' . esc_html__( 'Recipient', 'oxyddt-for-woocommerce' ) . '</th><td>'
+			. esc_html( $document->parties->recipient->name ) . '</td></tr>';
+		echo '</tbody></table>';
 
 		echo '<table class="widefat striped"><thead><tr>';
 		echo '<th>' . esc_html__( 'Product', 'oxyddt-for-woocommerce' ) . '</th>';
@@ -700,6 +893,25 @@ final class EditScreen implements Registrable {
 		}
 
 		echo '</tbody></table>';
+
+		if ( $cancelled || ! current_user_can( Capabilities::CANCEL ) ) {
+			return;
+		}
+
+		$order_ids = $document->all_order_ids();
+
+		echo '<hr /><h2>' . esc_html__( 'Cancel this delivery note', 'oxyddt-for-woocommerce' ) . '</h2>';
+		echo '<p>' . esc_html__( 'It keeps its number and stays in the register, saying why it is void. Its quantities go back on the order.', 'oxyddt-for-woocommerce' ) . '</p>';
+
+		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+		wp_nonce_field( 'oxyddt_cancel_document' );
+		echo '<input type="hidden" name="action" value="oxyddt_cancel_document" />';
+		echo '<input type="hidden" name="document" value="' . esc_attr( (string) $document->id ) . '" />';
+		echo '<input type="hidden" name="order_id" value="' . esc_attr( (string) ( $order_ids[0] ?? 0 ) ) . '" />';
+		echo '<p><label for="oxyddt-reason">' . esc_html__( 'Why', 'oxyddt-for-woocommerce' ) . '</label><br />';
+		echo '<textarea id="oxyddt-reason" name="reason" rows="2" class="large-text" required></textarea></p>';
+		submit_button( __( 'Cancel this delivery note', 'oxyddt-for-woocommerce' ), 'delete', 'submit', false );
+		echo '</form>';
 	}
 
 	/**

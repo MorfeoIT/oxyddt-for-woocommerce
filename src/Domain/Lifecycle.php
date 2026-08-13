@@ -97,6 +97,51 @@ final class Lifecycle {
 	}
 
 	/**
+	 * The same lifecycle, with the moment of issue recorded.
+	 *
+	 * @param string $at      When, "Y-m-d H:i:s" UTC.
+	 * @param int    $user_id Who.
+	 * @return self
+	 */
+	public function issued( string $at, int $user_id ): self {
+		return new self(
+			$this->created_at ?? $at,
+			0 === $this->created_by ? $user_id : $this->created_by,
+			$at,
+			$at,
+			$user_id,
+			$this->cancelled_at,
+			$this->cancelled_by,
+			$this->cancel_reason
+		);
+	}
+
+	/**
+	 * The same lifecycle, with the cancellation recorded.
+	 *
+	 * The moment of issue stays where it was. A cancelled document is a document
+	 * that was issued and then voided, and a register that forgot the first half
+	 * of that could not explain the second.
+	 *
+	 * @param string $at      When, "Y-m-d H:i:s" UTC.
+	 * @param int    $user_id Who.
+	 * @param string $reason  Why, in their words.
+	 * @return self
+	 */
+	public function cancelled( string $at, int $user_id, string $reason ): self {
+		return new self(
+			$this->created_at,
+			$this->created_by,
+			$at,
+			$this->issued_at,
+			$this->issued_by,
+			$at,
+			$user_id,
+			$reason
+		);
+	}
+
+	/**
 	 * The same lifecycle, touched now.
 	 *
 	 * @param string $now     The moment, "Y-m-d H:i:s" UTC.

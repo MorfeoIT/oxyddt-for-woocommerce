@@ -11,11 +11,15 @@ namespace Oxysoft\OxyDDT;
 
 use Oxysoft\OxyDDT\Admin\EditScreen;
 use Oxysoft\OxyDDT\Admin\Menu;
+use Oxysoft\OxyDDT\Admin\NumberingScreen;
 use Oxysoft\OxyDDT\Admin\OrderMetabox;
 use Oxysoft\OxyDDT\Admin\Screen;
 use Oxysoft\OxyDDT\Admin\SettingsScreen;
 use Oxysoft\OxyDDT\Audit\AuditLog;
 use Oxysoft\OxyDDT\Domain\DocumentRepositoryInterface;
+use Oxysoft\OxyDDT\Domain\SequenceRepositoryInterface;
+use Oxysoft\OxyDDT\Issuing\Issuer;
+use Oxysoft\OxyDDT\Persistence\SequenceRepository;
 use Oxysoft\OxyDDT\Infrastructure\ClockInterface;
 use Oxysoft\OxyDDT\Infrastructure\Container;
 use Oxysoft\OxyDDT\Infrastructure\Migrator;
@@ -66,6 +70,21 @@ final class Plugin {
 	 * Service identifier of the outstanding-quantities service.
 	 */
 	public const FULFILMENT = 'documents.fulfilment';
+
+	/**
+	 * Service identifier of the numbering counter.
+	 */
+	public const SEQUENCES = 'documents.sequences';
+
+	/**
+	 * Service identifier of the issuer.
+	 */
+	public const ISSUER = 'documents.issuer';
+
+	/**
+	 * Service identifier of the numbering tab.
+	 */
+	public const NUMBERING_SCREEN = 'admin.numbering';
 
 	/**
 	 * Service identifier of the admin page that holds the tabs.
@@ -198,6 +217,24 @@ final class Plugin {
 			)
 		);
 
+		$container->set(
+			self::SEQUENCES,
+			static fn ( Container $c ): SequenceRepository => new SequenceRepository(
+				$c->get_typed( self::CLOCK, ClockInterface::class )
+			)
+		);
+
+		$container->set(
+			self::ISSUER,
+			static fn ( Container $c ): Issuer => new Issuer(
+				$c->get_typed( self::DOCUMENTS, DocumentRepositoryInterface::class ),
+				$c->get_typed( self::SEQUENCES, SequenceRepositoryInterface::class ),
+				$c->get_typed( self::SETTINGS, Settings::class ),
+				$c->get_typed( self::CLOCK, ClockInterface::class ),
+				$c->get_typed( self::AUDIT, AuditLog::class )
+			)
+		);
+
 		// Admin-only services are not built on a front-end request at all. The
 		// hooks they add would never fire there, and the objects would be built
 		// for nothing on every page view.
@@ -219,12 +256,24 @@ final class Plugin {
 			);
 
 			$container->set(
+				self::NUMBERING_SCREEN,
+				static fn ( Container $c ): NumberingScreen => new NumberingScreen(
+					$c->get_typed( self::SETTINGS, Settings::class ),
+					$c->get_typed( self::SEQUENCES, SequenceRepositoryInterface::class ),
+					$c->get_typed( self::SCREEN, Screen::class ),
+					$c->get_typed( self::CLOCK, ClockInterface::class ),
+					$c->get_typed( self::AUDIT, AuditLog::class )
+				)
+			);
+
+			$container->set(
 				self::EDIT_SCREEN,
 				static fn ( Container $c ): EditScreen => new EditScreen(
 					$c->get_typed( self::DOCUMENTS, DocumentRepositoryInterface::class ),
 					$c->get_typed( self::DOCUMENT_FACTORY, DocumentFactory::class ),
 					$c->get_typed( self::FULFILMENT, OrderFulfilment::class ),
-					$c->get_typed( self::AUDIT, AuditLog::class )
+					$c->get_typed( self::AUDIT, AuditLog::class ),
+					$c->get_typed( self::ISSUER, Issuer::class )
 				)
 			);
 

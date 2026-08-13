@@ -51,6 +51,21 @@ final class AuditLog {
 	public const DOCUMENT_DELETED = 'document_deleted';
 
 	/**
+	 * A document was issued, and a number spent.
+	 */
+	public const DOCUMENT_ISSUED = 'document_issued';
+
+	/**
+	 * An issued document was voided.
+	 */
+	public const DOCUMENT_CANCELLED = 'document_cancelled';
+
+	/**
+	 * Somebody moved the counter.
+	 */
+	public const SEQUENCE_CHANGED = 'sequence_changed';
+
+	/**
 	 * The clock.
 	 *
 	 * @var ClockInterface

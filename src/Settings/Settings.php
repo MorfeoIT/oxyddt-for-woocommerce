@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace Oxysoft\OxyDDT\Settings;
 
 use Oxysoft\OxyDDT\Domain\Company;
+use Oxysoft\OxyDDT\Domain\NumberingPolicy;
 
 /**
  * Reads and writes the single option OxyDDT stores its configuration in.
@@ -38,6 +39,11 @@ final class Settings {
 		return array(
 			// The sender printed at the top of every document.
 			'company'                  => ( new Company() )->to_array(),
+
+			// How the shop numbers its delivery notes. The counter itself is not
+			// here: a sequence is a row two requests update at the same moment, and
+			// an option is exactly the wrong place for that.
+			'numbering'                => ( new NumberingPolicy() )->to_array(),
 
 			// Deleting the plugin does not delete a shop's delivery notes. An
 			// administrator who wants that turns this on first, and means it.
@@ -98,6 +104,27 @@ final class Settings {
 	}
 
 	/**
+	 * How the shop numbers its delivery notes.
+	 *
+	 * @return NumberingPolicy
+	 */
+	public function numbering(): NumberingPolicy {
+		$stored = $this->all()['numbering'];
+
+		return NumberingPolicy::from_array( is_array( $stored ) ? $stored : array() );
+	}
+
+	/**
+	 * Store the numbering policy.
+	 *
+	 * @param NumberingPolicy $numbering The policy.
+	 * @return void
+	 */
+	public function update_numbering( NumberingPolicy $numbering ): void {
+		$this->update( array( 'numbering' => $numbering->to_array() ) );
+	}
+
+	/**
 	 * Write settings, merging over what is already stored.
 	 *
 	 * @param array<string, mixed> $changes Settings to change.
@@ -123,13 +150,15 @@ final class Settings {
 	 * @return array<string, mixed>
 	 */
 	public static function sanitize( array $input ): array {
-		$company = $input['company'] ?? array();
+		$company   = $input['company'] ?? array();
+		$numbering = $input['numbering'] ?? array();
 
 		return array(
 			// Round-tripping through the value object is the normalisation: the VAT
 			// number loses its spaces and its "IT", the province becomes uppercase,
 			// an origin left blank becomes no origin at all.
 			'company'                  => Company::from_array( is_array( $company ) ? $company : array() )->to_array(),
+			'numbering'                => NumberingPolicy::from_array( is_array( $numbering ) ? $numbering : array() )->to_array(),
 			'delete_data_on_uninstall' => ! empty( $input['delete_data_on_uninstall'] ),
 		);
 	}

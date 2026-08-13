@@ -77,6 +77,41 @@ final class LifecycleTest extends TestCase {
 	}
 
 	/**
+	 * Issuing records when and who, and keeps the creation date.
+	 *
+	 * @return void
+	 */
+	public function test_issuing_is_recorded(): void {
+		$issued = ( new Lifecycle() )
+			->touched( '2026-08-13 09:00:00', 7 )
+			->issued( '2026-08-13 09:05:00', 9 );
+
+		$this->assertSame( '2026-08-13 09:00:00', $issued->created_at );
+		$this->assertSame( 7, $issued->created_by );
+		$this->assertSame( '2026-08-13 09:05:00', $issued->issued_at );
+		$this->assertSame( 9, $issued->issued_by );
+		$this->assertNull( $issued->cancelled_at );
+	}
+
+	/**
+	 * Cancelling keeps the moment of issue. A register that forgot the first
+	 * half of "issued and then voided" could not explain the second.
+	 *
+	 * @return void
+	 */
+	public function test_cancelling_keeps_the_moment_of_issue(): void {
+		$cancelled = ( new Lifecycle() )
+			->issued( '2026-08-13 09:05:00', 7 )
+			->cancelled( '2026-08-20 16:00:00', 9, 'Wrong recipient' );
+
+		$this->assertSame( '2026-08-13 09:05:00', $cancelled->issued_at );
+		$this->assertSame( 7, $cancelled->issued_by );
+		$this->assertSame( '2026-08-20 16:00:00', $cancelled->cancelled_at );
+		$this->assertSame( 9, $cancelled->cancelled_by );
+		$this->assertSame( 'Wrong recipient', $cancelled->cancel_reason );
+	}
+
+	/**
 	 * A round trip through storage.
 	 *
 	 * @return void

@@ -32,7 +32,7 @@ final class Migrator {
 	/**
 	 * The schema version this code expects.
 	 */
-	public const TARGET_VERSION = 2;
+	public const TARGET_VERSION = 3;
 
 	/**
 	 * The audit log table, without the WordPress prefix.
@@ -53,6 +53,11 @@ final class Migrator {
 	 * Which documents draw on which orders, without the WordPress prefix.
 	 */
 	public const TABLE_ORDERS = 'oxyddt_orders';
+
+	/**
+	 * The numbering counters, without the WordPress prefix.
+	 */
+	public const TABLE_SEQUENCES = 'oxyddt_sequences';
 
 	/**
 	 * Whether the stored schema is behind the code.
@@ -119,6 +124,7 @@ final class Migrator {
 			self::table( self::TABLE_ITEMS ),
 			self::table( self::TABLE_ORDERS ),
 			self::table( self::TABLE_DOCUMENTS ),
+			self::table( self::TABLE_SEQUENCES ),
 			self::table( self::TABLE_LOGS ),
 		);
 	}
@@ -140,6 +146,9 @@ final class Migrator {
 				$this->create_documents_table();
 				$this->create_items_table();
 				$this->create_orders_table();
+			},
+			3 => function (): void {
+				$this->create_sequences_table();
 			},
 		);
 	}
@@ -294,6 +303,39 @@ final class Migrator {
 			KEY document (document_id,sort_order),
 			KEY order_line (order_id,order_item_id),
 			KEY product (product_id)
+		) {$collate};";
+
+		dbDelta( $sql );
+	}
+
+	/**
+	 * The counters.
+	 *
+	 * One row per series and year, holding the next number to hand out. Tiny,
+	 * and the most carefully written table in the plugin: everything about
+	 * numbering being safe comes down to two people updating this row and MySQL
+	 * making one of them wait.
+	 *
+	 * The primary key is (series, year), so a shop that resets in January gets a
+	 * new row and last year's stays where it was — which is what makes reopening
+	 * an old year to correct something possible at all.
+	 *
+	 * @return void
+	 */
+	private function create_sequences_table(): void {
+		global $wpdb;
+
+		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+
+		$table   = self::table( self::TABLE_SEQUENCES );
+		$collate = $wpdb->get_charset_collate();
+
+		$sql = "CREATE TABLE {$table} (
+			series varchar(20) NOT NULL DEFAULT '',
+			sequence_year smallint(5) unsigned NOT NULL,
+			next_number int(10) unsigned NOT NULL DEFAULT 1,
+			updated_at datetime DEFAULT NULL,
+			PRIMARY KEY  (series,sequence_year)
 		) {$collate};";
 
 		dbDelta( $sql );

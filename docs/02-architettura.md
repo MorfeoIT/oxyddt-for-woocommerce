@@ -49,7 +49,7 @@ Tabelle previste (nomi definitivi, `{prefix}` è quello del sito):
 | `{prefix}oxyddt_documents` | 2 ✅ |
 | `{prefix}oxyddt_items` | 2 ✅ |
 | `{prefix}oxyddt_orders` | 2 ✅ (DDT ↔ ordini, molti a molti) |
-| `{prefix}oxyddt_sequences` | 4 |
+| `{prefix}oxyddt_sequences` | 3 ✅ |
 | `{prefix}oxyddt_carriers` | 5-6 |
 
 Lo schema è versionato in `Migrator::TARGET_VERSION` e ogni migrazione registra
@@ -130,12 +130,43 @@ e `oxyddt-for-woocommerce-pro`.
 | 1 | bootstrap, migrazioni, impostazioni azienda, capability | ✅ |
 | 2 | modello DDT, relazione ordine-DDT, snapshot cliente | ✅ |
 | 3 | creazione da ordine, quantità residue, evasione parziale | ✅ |
-| 4 | numerazione atomica, emissione, immutabilità, annullamento | |
+| 4 | numerazione atomica, emissione, immutabilità, annullamento | ✅ |
 | 5 | PDF, download protetto, stampa, email | |
 | 6 | registro, filtri, box nell'ordine | |
 | 7 | HPOS, test di concorrenza, sicurezza, prestazioni | |
 | 8 | i18n, documentazione, pacchetto per wordpress.org | |
 
-Sullo sprint 4: il test di concorrenza («due utenti premono Emetti insieme»)
-si scrive **nello sprint 4**, non nel 7. Una numerazione che si scopre fragile
-allo sprint 7 ha già prodotto documenti.
+## La numerazione, e cosa è davvero dimostrato
+
+Il numero lo assegna il **database**, non PHP:
+
+```sql
+UPDATE …oxyddt_sequences
+   SET next_number = LAST_INSERT_ID(next_number) + 1
+ WHERE series = %s AND sequence_year = %d
+```
+
+MySQL prende un lock di riga per la durata dello statement, quindi due richieste
+che arrivano insieme vengono serializzate; `LAST_INSERT_ID(expr)` registra per
+**questa connessione** il valore preso, che si rilegge con
+`SELECT LAST_INSERT_ID()` senza tornare sulla tabella — cioè senza finestra in
+cui qualcun altro possa prendere lo stesso numero. L'alternativa ovvia (leggi,
+somma uno, riscrivi) quella finestra ce l'ha, ed è larga quanto due istruzioni
+PHP.
+
+Seconda difesa: l'indice unico su `(series, sequence_year, sequence_number)`. Se
+il numero è già in uso, l'INSERT viene rifiutato e l'`Issuer` **riprova** con il
+successivo (fino a 5 volte). Mai un duplicato; al massimo un buco, e un buco si
+spiega.
+
+**Cosa è dimostrato dai test** (sprint 4): 100 allocazioni consecutive danno 100
+numeri distinti e contigui; un numero già preso da «un'altra richiesta» viene
+aggirato e produce 125 e 126; una bozza non pronta non consuma nulla; un numero
+annullato non torna nel mazzo.
+
+**Cosa NON è dimostrato**: il parallelismo vero. PHPUnit gira in un processo
+solo e la suite di WordPress avvolge ogni test in una transazione, quindi una
+seconda connessione non vedrebbe nemmeno le righe. La prova con processi
+concorrenti su un server vero resta **allo sprint 7**, sul banco.
+
+Il resto dello sprint 7 (HPOS, sicurezza, prestazioni) è invariato.

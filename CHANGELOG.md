@@ -5,6 +5,25 @@ read; this one is for whoever works on the plugin.
 
 ## [Unreleased]
 
+### Sprint 4 — numbering, issuing, immutability, cancelling
+
+* Numbers are handed out by the database, not by PHP: one `UPDATE … SET
+  next_number = LAST_INSERT_ID(next_number) + 1` per document, which MySQL
+  serialises with a row lock. Two people pressing Issue in the same second get
+  125 and 126.
+* If a number is refused by the unique index anyway — somebody else got there
+  first — the whole issue is retried with the next one. Never a duplicate; at
+  worst a hole, and a hole is explainable.
+* A number belongs to the year printed on the document, not to the day somebody
+  pressed the button: one dated the 31st of December and issued on the 2nd of
+  January counts against the old year.
+* Issuing validates first and numbers second, so a draft that is not ready never
+  spends a number.
+* Cancelling keeps the number, records who and why, and gives the goods back to
+  the order. A cancelled number is never handed out again.
+* A numbering tab of its own, behind its own capability: where the count starts,
+  how it is written, whether it resets in January, and a preview of the next one.
+
 ### Sprint 3 — creating from an order, what is left, partial fulfilment
 
 * The calculation the product is bought for: ordered, already sent, held by
