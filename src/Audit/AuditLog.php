@@ -36,6 +36,21 @@ final class AuditLog {
 	public const INSTALLED = 'installed';
 
 	/**
+	 * A draft was started.
+	 */
+	public const DOCUMENT_CREATED = 'document_created';
+
+	/**
+	 * A draft was changed.
+	 */
+	public const DOCUMENT_UPDATED = 'document_updated';
+
+	/**
+	 * A draft was thrown away.
+	 */
+	public const DOCUMENT_DELETED = 'document_deleted';
+
+	/**
 	 * The clock.
 	 *
 	 * @var ClockInterface

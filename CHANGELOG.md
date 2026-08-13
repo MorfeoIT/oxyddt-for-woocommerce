@@ -5,6 +5,22 @@ read; this one is for whoever works on the plugin.
 
 ## [Unreleased]
 
+### Sprint 3 — creating from an order, what is left, partial fulfilment
+
+* The calculation the product is bought for: ordered, already sent, held by
+  another draft, still available — per order line, in plain PHP, with a test for
+  every branch.
+* A cancelled delivery note gives its quantities back to the order. A draft
+  holds them without sending them. A draft being edited does not count against
+  itself.
+* The screen: one table, opening with the whole remainder filled in, and a
+  header for the date, the reason for transport and the carrier.
+* Asking for more than the order has left is refused, naming the line and what
+  was available, unless the user is allowed to override it.
+* A box on the order screen — what has gone out, every delivery note so far, and
+  the button that starts the next one. It follows whichever screen the shop's
+  orders live on, so it works with the high-performance order tables and without.
+
 ### Sprint 2 — the document, the orders it draws on, the customer it froze
 
 * The document model: draft, issued, cancelled, and an issued one that refuses

@@ -129,7 +129,7 @@ e `oxyddt-for-woocommerce-pro`.
 |---|---|---|
 | 1 | bootstrap, migrazioni, impostazioni azienda, capability | ✅ |
 | 2 | modello DDT, relazione ordine-DDT, snapshot cliente | ✅ |
-| 3 | creazione da ordine, quantità residue, evasione parziale | |
+| 3 | creazione da ordine, quantità residue, evasione parziale | ✅ |
 | 4 | numerazione atomica, emissione, immutabilità, annullamento | |
 | 5 | PDF, download protetto, stampa, email | |
 | 6 | registro, filtri, box nell'ordine | |

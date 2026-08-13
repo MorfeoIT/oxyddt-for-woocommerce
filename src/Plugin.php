@@ -9,10 +9,13 @@ declare(strict_types=1);
 
 namespace Oxysoft\OxyDDT;
 
+use Oxysoft\OxyDDT\Admin\EditScreen;
 use Oxysoft\OxyDDT\Admin\Menu;
+use Oxysoft\OxyDDT\Admin\OrderMetabox;
 use Oxysoft\OxyDDT\Admin\Screen;
 use Oxysoft\OxyDDT\Admin\SettingsScreen;
 use Oxysoft\OxyDDT\Audit\AuditLog;
+use Oxysoft\OxyDDT\Domain\DocumentRepositoryInterface;
 use Oxysoft\OxyDDT\Infrastructure\ClockInterface;
 use Oxysoft\OxyDDT\Infrastructure\Container;
 use Oxysoft\OxyDDT\Infrastructure\Migrator;
@@ -22,6 +25,7 @@ use Oxysoft\OxyDDT\Persistence\DocumentRepository;
 use Oxysoft\OxyDDT\Security\Capabilities;
 use Oxysoft\OxyDDT\Settings\Settings;
 use Oxysoft\OxyDDT\WooCommerce\DocumentFactory;
+use Oxysoft\OxyDDT\WooCommerce\OrderFulfilment;
 
 /**
  * Builds the object graph and registers the hooks.
@@ -59,9 +63,24 @@ final class Plugin {
 	public const DOCUMENT_FACTORY = 'documents.factory';
 
 	/**
+	 * Service identifier of the outstanding-quantities service.
+	 */
+	public const FULFILMENT = 'documents.fulfilment';
+
+	/**
 	 * Service identifier of the admin page that holds the tabs.
 	 */
 	public const SCREEN = 'admin.screen';
+
+	/**
+	 * Service identifier of the screen that prepares a delivery note.
+	 */
+	public const EDIT_SCREEN = 'admin.edit';
+
+	/**
+	 * Service identifier of the box on the order screen.
+	 */
+	public const ORDER_METABOX = 'admin.order-metabox';
 
 	/**
 	 * Service identifier of the settings tab.
@@ -172,6 +191,13 @@ final class Plugin {
 			)
 		);
 
+		$container->set(
+			self::FULFILMENT,
+			static fn ( Container $c ): OrderFulfilment => new OrderFulfilment(
+				$c->get_typed( self::DOCUMENTS, DocumentRepositoryInterface::class )
+			)
+		);
+
 		// Admin-only services are not built on a front-end request at all. The
 		// hooks they add would never fire there, and the objects would be built
 		// for nothing on every page view.
@@ -193,9 +219,27 @@ final class Plugin {
 			);
 
 			$container->set(
+				self::EDIT_SCREEN,
+				static fn ( Container $c ): EditScreen => new EditScreen(
+					$c->get_typed( self::DOCUMENTS, DocumentRepositoryInterface::class ),
+					$c->get_typed( self::DOCUMENT_FACTORY, DocumentFactory::class ),
+					$c->get_typed( self::FULFILMENT, OrderFulfilment::class ),
+					$c->get_typed( self::AUDIT, AuditLog::class )
+				)
+			);
+
+			$container->set(
+				self::ORDER_METABOX,
+				static fn ( Container $c ): OrderMetabox => new OrderMetabox(
+					$c->get_typed( self::FULFILMENT, OrderFulfilment::class )
+				)
+			);
+
+			$container->set(
 				self::MENU,
 				static fn ( Container $c ): Menu => new Menu(
-					$c->get_typed( self::SCREEN, Screen::class )
+					$c->get_typed( self::SCREEN, Screen::class ),
+					$c->get_typed( self::EDIT_SCREEN, EditScreen::class )
 				)
 			);
 		}
