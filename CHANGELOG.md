@@ -5,6 +5,27 @@ read; this one is for whoever works on the plugin.
 
 ## [Unreleased]
 
+### Sprint 7 — proving it
+
+* **Concurrency, for real.** `scripts/concurrency-check.php` starts twelve
+  processes, has them all wait for the same instant, and sends them at one
+  counter for twenty-five numbers each. It then checks the three hundred numbers
+  are exactly 1..300, once each. It runs in CI on every push, and the SQL it
+  runs comes from the same class the plugin uses, so it proves the real thing.
+* **HPOS, both ways.** The whole integration suite runs twice: once with orders
+  in the posts table, once with the high-performance tables. A test asserts the
+  environment is the one that was asked for, so a green "hpos" run cannot
+  quietly be a second posts run.
+* **Security, written as attempts.** Climbing out of the uploads directory,
+  loading a template that is not a template, ending a SQL string from the search
+  box, being a customer with a browser — each one is a test, and the assertion
+  is what happens instead. Plus: no endpoint is registered for logged-out
+  visitors, and a PDF link is signed for one document rather than for the action.
+* **Performance, counted in queries rather than seconds.** A page of the
+  register costs the same number of queries with five documents as with thirty;
+  the box on an order costs the same with three delivery notes as with fifteen.
+  A stopwatch on a CI runner measures the runner; N+1 is what actually arrives.
+
 ### Sprint 6 — the register, and the box on the order
 
 * WooCommerce → DDT opens on the register: number, date, customer, order, place

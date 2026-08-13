@@ -151,7 +151,7 @@ e `oxyddt-for-woocommerce-pro`.
 | 4 | numerazione atomica, emissione, immutabilità, annullamento | ✅ |
 | 5 | PDF, download protetto, stampa, email | ✅ |
 | 6 | registro, filtri, box nell'ordine | ✅ |
-| 7 | HPOS, test di concorrenza, sicurezza, prestazioni | |
+| 7 | HPOS, test di concorrenza, sicurezza, prestazioni | ✅ |
 | 8 | i18n, documentazione, pacchetto per wordpress.org | |
 
 ## La numerazione, e cosa è davvero dimostrato
@@ -182,9 +182,31 @@ numeri distinti e contigui; un numero già preso da «un'altra richiesta» viene
 aggirato e produce 125 e 126; una bozza non pronta non consuma nulla; un numero
 annullato non torna nel mazzo.
 
-**Cosa NON è dimostrato**: il parallelismo vero. PHPUnit gira in un processo
-solo e la suite di WordPress avvolge ogni test in una transazione, quindi una
-seconda connessione non vedrebbe nemmeno le righe. La prova con processi
-concorrenti su un server vero resta **allo sprint 7**, sul banco.
+**Il parallelismo vero è dimostrato dallo sprint 7**, e non da PHPUnit: la suite
+gira in un processo solo e avvolge ogni test in una transazione, quindi una
+seconda connessione non vedrebbe nemmeno le righe. Lo fa
+`scripts/concurrency-check.php`, che avvia **12 processi**, li fa aspettare tutti
+lo stesso istante e li lancia a prendere 25 numeri ciascuno dallo stesso
+contatore; poi verifica che i 300 numeri siano esattamente 1..300, ognuno una
+volta. Gira nella CI a ogni push.
 
-Il resto dello sprint 7 (HPOS, sicurezza, prestazioni) è invariato.
+L'SQL che esegue **non è una copia**: viene da `Domain\SequenceSql`, la stessa
+classe che usa il repository. Se qualcuno cambia le istruzioni vere, cambia
+quello che il controllo dimostra.
+
+## Cosa prova lo sprint 7
+
+* **HPOS**: l'intera suite di integrazione gira **due volte**, una con gli ordini
+  nella tabella dei post e una con le tabelle ad alte prestazioni
+  (`WP_WOOCOMMERCE_HPOS=1`). C'è un test che verifica che l'ambiente sia davvero
+  quello richiesto: senza, la gamba «hpos» della matrice potrebbe provare due
+  volte la stessa cosa e il verde non significherebbe niente.
+* **Sicurezza**: i tentativi sono scritti come tentativi — uscire dalla cartella
+  uploads, farsi caricare un template che non è un template, chiudere una stringa
+  SQL dalla casella di ricerca, essere un cliente con un browser. Più il fatto
+  che nessun endpoint è registrato su `admin_post_nopriv_*`.
+* **Prestazioni**: si contano le **query**, non i secondi (un cronometro su un
+  runner misura il runner). Una pagina di registro costa lo stesso numero di
+  query con 5 documenti e con 30; il box dell'ordine costa lo stesso con 3 DDT e
+  con 15. È l'N+1 che arriva in silenzio dopo diciotto mesi, sull'unico negozio
+  con quattro anni di spedizioni.

@@ -10,18 +10,24 @@ declare(strict_types=1);
 namespace Oxysoft\OxyDDT\Persistence;
 
 use Oxysoft\OxyDDT\Domain\SequenceRepositoryInterface;
+use Oxysoft\OxyDDT\Domain\SequenceSql;
 use Oxysoft\OxyDDT\Infrastructure\ClockInterface;
 use Oxysoft\OxyDDT\Infrastructure\Migrator;
 
 /*
- * The plugin's own table, one row per series and year. Prepared where it takes
- * a value; the table name is this plugin's constant behind the site prefix.
- * Nothing here may be cached — the whole file exists to read a number that
+ * The plugin's own table, one row per series and year. Every value goes through
+ * a placeholder; the statements themselves come from Domain\SequenceSql, which
+ * is deliberately the same class the concurrency check in scripts/ runs against
+ * a dozen processes at once — the thing proved is the thing used. The sniff
+ * cannot follow a statement that arrives from a method call and says so.
+ *
+ * Nothing here may be cached: the whole file exists to read a number that
  * another request may have changed a microsecond ago.
  */
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.NoCaching
 // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared
 // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 
 /**
@@ -89,7 +95,7 @@ final class SequenceRepository implements SequenceRepositoryInterface {
 		// both insert. The primary key decides, and the loser is ignored.
 		$wpdb->query(
 			$wpdb->prepare(
-				"INSERT IGNORE INTO {$table} (series, sequence_year, next_number, updated_at) VALUES (%s, %d, %d, %s)",
+				SequenceSql::create( $table ),
 				$series,
 				$year,
 				$start,
@@ -99,9 +105,7 @@ final class SequenceRepository implements SequenceRepositoryInterface {
 
 		$moved = $wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$table}
-					SET next_number = LAST_INSERT_ID(next_number) + 1, updated_at = %s
-					WHERE series = %s AND sequence_year = %d",
+				SequenceSql::allocate( $table ),
 				$this->clock->now()->format( 'Y-m-d H:i:s' ),
 				$series,
 				$year
@@ -114,7 +118,7 @@ final class SequenceRepository implements SequenceRepositoryInterface {
 			);
 		}
 
-		$allocated = (int) $wpdb->get_var( 'SELECT LAST_INSERT_ID()' );
+		$allocated = (int) $wpdb->get_var( SequenceSql::allocated() );
 
 		if ( $allocated <= 0 ) {
 			throw new StorageException(
@@ -140,7 +144,7 @@ final class SequenceRepository implements SequenceRepositoryInterface {
 
 		$next = $wpdb->get_var(
 			$wpdb->prepare(
-				"SELECT next_number FROM {$table} WHERE series = %s AND sequence_year = %d",
+				SequenceSql::peek( $table ),
 				$series,
 				$year
 			)
@@ -166,8 +170,7 @@ final class SequenceRepository implements SequenceRepositoryInterface {
 
 		$wpdb->query(
 			$wpdb->prepare(
-				"INSERT INTO {$table} (series, sequence_year, next_number, updated_at) VALUES (%s, %d, %d, %s)
-					ON DUPLICATE KEY UPDATE next_number = VALUES(next_number), updated_at = VALUES(updated_at)",
+				SequenceSql::set_next( $table ),
 				$series,
 				$year,
 				$next,

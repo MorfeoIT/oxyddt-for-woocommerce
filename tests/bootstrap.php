@@ -95,6 +95,19 @@ tests_add_filter(
 	'setup_theme',
 	static function (): void {
 		if ( class_exists( 'WC_Install' ) ) {
+			// The whole suite runs twice in CI: once with orders in the posts
+			// table, once with the high-performance tables. The plugin is supposed
+			// not to care, and the only way to be sure of that is to run it both
+			// ways rather than to say so.
+			//
+			// Set before install, because install is what creates the tables the
+			// setting points at.
+			if ( '' !== (string) getenv( 'WP_WOOCOMMERCE_HPOS' ) ) {
+				update_option( 'woocommerce_feature_custom_order_tables_enabled', 'yes' );
+				update_option( 'woocommerce_custom_orders_table_enabled', 'yes' );
+				update_option( 'woocommerce_custom_orders_table_data_sync_enabled', 'no' );
+			}
+
 			WC_Install::install();
 
 			// Roles live in an option, and WP_Roles read that option before

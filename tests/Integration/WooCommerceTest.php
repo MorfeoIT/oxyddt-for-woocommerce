@@ -50,6 +50,33 @@ final class WooCommerceTest extends WP_UnitTestCase {
 	}
 
 	/**
+	 * The environment is the one it was asked to be.
+	 *
+	 * Without this, the "hpos" leg of the matrix could quietly be testing the
+	 * posts table for a second time — a green pipeline proving half of what it
+	 * claims, which is worse than a red one.
+	 *
+	 * @return void
+	 */
+	public function test_the_order_storage_is_the_one_this_run_asked_for(): void {
+		$wanted = (string) getenv( 'WP_WOOCOMMERCE_HPOS' );
+
+		if ( '' === $wanted ) {
+			$this->assertFalse(
+				WooCommerce::hpos_enabled(),
+				'This run did not ask for the high-performance order tables, but they are on.'
+			);
+
+			return;
+		}
+
+		$this->assertTrue(
+			WooCommerce::hpos_enabled(),
+			'This run asked for the high-performance order tables and did not get them.'
+		);
+	}
+
+	/**
 	 * The page slug is what every link in the plugin is built from, and what a
 	 * later sprint would break by renaming.
 	 *
