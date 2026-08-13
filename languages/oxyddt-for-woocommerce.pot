@@ -1,0 +1,975 @@
+# Copyright (C) 2026 Oxysoft
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: OxyDDT – Italian Delivery Notes (DDT) for WooCommerce 0.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/oxyddt-for-woocommerce\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-08-14T00:18:41+02:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: oxyddt-for-woocommerce\n"
+
+#. Plugin Name of the plugin
+#: oxyddt-for-woocommerce.php
+msgid "OxyDDT – Italian Delivery Notes (DDT) for WooCommerce"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: oxyddt-for-woocommerce.php
+msgid "https://oxywp.com/plugins/oxyddt-for-woocommerce/"
+msgstr ""
+
+#. Description of the plugin
+#: oxyddt-for-woocommerce.php
+msgid "Issue Italian delivery notes (documenti di trasporto) from WooCommerce orders: partial fulfilment, protected numbering, immutable issued documents and PDF."
+msgstr ""
+
+#. Author of the plugin
+#: oxyddt-for-woocommerce.php
+msgid "Oxysoft"
+msgstr ""
+
+#. Author URI of the plugin
+#: oxyddt-for-woocommerce.php
+msgid "https://oxysoft.it/"
+msgstr ""
+
+#. translators: 1: required PHP version, 2: required WordPress version.
+#: oxyddt-for-woocommerce.php:158
+#, php-format
+msgid "OxyDDT needs PHP %1$s or later and WordPress %2$s or later. It has not been started."
+msgstr ""
+
+#: src/Admin/DocumentActions.php:118
+#: src/Admin/RegisterScreen.php:91
+#: src/Admin/Screen.php:70
+msgid "You are not allowed to see delivery notes."
+msgstr ""
+
+#: src/Admin/DocumentActions.php:128
+#: src/Admin/DocumentActions.php:195
+#: src/Admin/EditScreen.php:418
+msgid "That delivery note does not exist."
+msgstr ""
+
+#: src/Admin/DocumentActions.php:141
+msgid "The PDF could not be produced. The site log has the details."
+msgstr ""
+
+#: src/Admin/DocumentActions.php:175
+msgid "You are not allowed to send delivery notes."
+msgstr ""
+
+#: src/Admin/DocumentActions.php:205
+msgid "Not sent: check the address, and that the delivery note has been issued."
+msgstr ""
+
+#. translators: %s: the email address.
+#: src/Admin/DocumentActions.php:216
+#, php-format
+msgid "Sent to %s."
+msgstr ""
+
+#: src/Admin/DocumentActions.php:219
+msgid "This site could not send the email. That is a mail problem, not a delivery note problem: the document is unchanged."
+msgstr ""
+
+#: src/Admin/EditScreen.php:156
+#: src/Admin/EditScreen.php:266
+#: src/Admin/EditScreen.php:498
+msgid "You are not allowed to prepare delivery notes."
+msgstr ""
+
+#: src/Admin/EditScreen.php:182
+#: src/Admin/Menu.php:81
+#: src/Admin/Menu.php:82
+#: templates/pdf/document.php:109
+msgid "Delivery note"
+msgstr ""
+
+#: src/Admin/EditScreen.php:184
+msgid "That order does not exist, so there is nothing to prepare a delivery note from."
+msgstr ""
+
+#. translators: %s: order number.
+#: src/Admin/EditScreen.php:196
+#, php-format
+msgid "New delivery note for order %s"
+msgstr ""
+
+#. translators: 1: document number or "draft", 2: order number.
+#: src/Admin/EditScreen.php:203
+#, php-format
+msgid "Delivery note %1$s for order %2$s"
+msgstr ""
+
+#: src/Admin/EditScreen.php:205
+#: src/Infrastructure/Labels.php:104
+msgid "draft"
+msgstr ""
+
+#: src/Admin/EditScreen.php:236
+msgid "Save draft"
+msgstr ""
+
+#: src/Admin/EditScreen.php:240
+msgid "Save and issue"
+msgstr ""
+
+#: src/Admin/EditScreen.php:242
+msgid "Issuing takes the next number and closes the document. From then on it cannot be changed, only cancelled."
+msgstr ""
+
+#: src/Admin/EditScreen.php:280
+msgid "That order does not exist."
+msgstr ""
+
+#: src/Admin/EditScreen.php:290
+msgid "This delivery note has been issued and cannot be changed. Cancel it and prepare another."
+msgstr ""
+
+#: src/Admin/EditScreen.php:302
+msgid "Nothing was going out: put a quantity against at least one line."
+msgstr ""
+
+#: src/Admin/EditScreen.php:343
+msgid "Draft saved."
+msgstr ""
+
+#: src/Admin/EditScreen.php:344
+msgid "Draft saved, for more than the order has left. That was allowed because you are permitted to override it."
+msgstr ""
+
+#: src/Admin/EditScreen.php:361
+msgid "Saved as a draft: you are not allowed to issue delivery notes."
+msgstr ""
+
+#. translators: %s: what is missing, as a list.
+#: src/Admin/EditScreen.php:374
+#, php-format
+msgid "Saved as a draft, but not issued: %s"
+msgstr ""
+
+#. translators: %s: the number of the delivery note.
+#: src/Admin/EditScreen.php:386
+#, php-format
+msgid "Issued as %s. It cannot be changed now, only cancelled."
+msgstr ""
+
+#: src/Admin/EditScreen.php:402
+msgid "You are not allowed to cancel delivery notes."
+msgstr ""
+
+#. translators: %s: the number of the delivery note.
+#: src/Admin/EditScreen.php:438
+#, php-format
+msgid "Delivery note %s is cancelled. Its quantities are back on the order."
+msgstr ""
+
+#: src/Admin/EditScreen.php:452
+msgid "it has already been issued"
+msgstr ""
+
+#: src/Admin/EditScreen.php:453
+msgid "only an issued delivery note can be cancelled"
+msgstr ""
+
+#: src/Admin/EditScreen.php:454
+msgid "a cancellation has to say why"
+msgstr ""
+
+#: src/Admin/EditScreen.php:455
+msgid "a number could not be settled on — try again"
+msgstr ""
+
+#: src/Admin/EditScreen.php:456
+msgid "nothing is on it"
+msgstr ""
+
+#: src/Admin/EditScreen.php:457
+msgid "the reason for transport is missing"
+msgstr ""
+
+#: src/Admin/EditScreen.php:458
+msgid "the date is missing"
+msgstr ""
+
+#: src/Admin/EditScreen.php:471
+msgid "the sender is not complete — see Settings"
+msgstr ""
+
+#: src/Admin/EditScreen.php:477
+msgid "the recipient or the destination is not complete"
+msgstr ""
+
+#: src/Admin/EditScreen.php:514
+msgid "That draft could not be deleted. An issued delivery note is cancelled, never deleted."
+msgstr ""
+
+#: src/Admin/EditScreen.php:525
+msgid "Draft deleted."
+msgstr ""
+
+#. translators: 1: product name, 2: quantity still available.
+#: src/Admin/EditScreen.php:571
+#, php-format
+msgid "%1$s: %2$s left"
+msgstr ""
+
+#. translators: %s: list of products and their remaining quantities.
+#: src/Admin/EditScreen.php:579
+#, php-format
+msgid "Nothing was saved: the order does not have that much left. %s."
+msgstr ""
+
+#: src/Admin/EditScreen.php:685
+#: src/Admin/EditScreen.php:893
+#: templates/pdf/document.php:128
+msgid "Recipient"
+msgstr ""
+
+#: src/Admin/EditScreen.php:690
+msgid "Delivered to:"
+msgstr ""
+
+#: src/Admin/EditScreen.php:696
+msgid "Taken from the order when this draft was started, and kept as it was: editing the order afterwards does not change a delivery note."
+msgstr ""
+
+#: src/Admin/EditScreen.php:708
+msgid "What is going out"
+msgstr ""
+
+#: src/Admin/EditScreen.php:710
+#: src/Admin/EditScreen.php:898
+msgid "Product"
+msgstr ""
+
+#: src/Admin/EditScreen.php:711
+msgid "Ordered"
+msgstr ""
+
+#: src/Admin/EditScreen.php:712
+msgid "Already sent"
+msgstr ""
+
+#: src/Admin/EditScreen.php:713
+msgid "On other drafts"
+msgstr ""
+
+#: src/Admin/EditScreen.php:714
+msgid "Available"
+msgstr ""
+
+#: src/Admin/EditScreen.php:715
+msgid "This note"
+msgstr ""
+
+#: src/Admin/EditScreen.php:753
+msgid "Leave a line at zero to keep it for a later delivery note."
+msgstr ""
+
+#: src/Admin/EditScreen.php:769
+msgid "The document"
+msgstr ""
+
+#: src/Admin/EditScreen.php:772
+#: src/Admin/EditScreen.php:889
+#: src/Admin/RegisterScreen.php:207
+#: templates/pdf/document.php:111
+msgid "Date"
+msgstr ""
+
+#: src/Admin/EditScreen.php:776
+#: templates/pdf/document.php:113
+msgid "Reason for transport"
+msgstr ""
+
+#: src/Admin/EditScreen.php:793
+msgid "Required on an Italian delivery note."
+msgstr ""
+
+#: src/Admin/EditScreen.php:796
+#: templates/pdf/document.php:206
+msgid "Notes"
+msgstr ""
+
+#: src/Admin/EditScreen.php:811
+#: templates/pdf/document.php:173
+msgid "Transport"
+msgstr ""
+
+#: src/Admin/EditScreen.php:814
+msgid "In whose care"
+msgstr ""
+
+#: src/Admin/EditScreen.php:816
+#: src/Admin/EditScreen.php:832
+msgid "— not stated —"
+msgstr ""
+
+#: src/Admin/EditScreen.php:825
+#: src/Admin/RegisterScreen.php:172
+#: src/Admin/RegisterScreen.php:212
+#: templates/pdf/document.php:222
+msgid "Carrier"
+msgstr ""
+
+#: src/Admin/EditScreen.php:830
+msgid "Carriage"
+msgstr ""
+
+#: src/Admin/EditScreen.php:841
+msgid "Packages"
+msgstr ""
+
+#: src/Admin/EditScreen.php:846
+msgid "Gross weight"
+msgstr ""
+
+#: src/Admin/EditScreen.php:849
+msgid "Net weight"
+msgstr ""
+
+#: src/Admin/EditScreen.php:854
+msgid "Appearance of the goods"
+msgstr ""
+
+#: src/Admin/EditScreen.php:857
+msgid "Boxes, pallets, loose — what the load looks like from outside."
+msgstr ""
+
+#. translators: %s: the reason it was cancelled.
+#: src/Admin/EditScreen.php:878
+#, php-format
+msgid "This delivery note has been cancelled: %s"
+msgstr ""
+
+#: src/Admin/EditScreen.php:882
+msgid "This delivery note has been issued. It cannot be changed: cancel it and prepare another."
+msgstr ""
+
+#: src/Admin/EditScreen.php:887
+#: src/Admin/RegisterScreen.php:206
+msgid "Number"
+msgstr ""
+
+#: src/Admin/EditScreen.php:891
+msgid "Issued"
+msgstr ""
+
+#: src/Admin/EditScreen.php:899
+#: templates/pdf/document.php:153
+msgid "Quantity"
+msgstr ""
+
+#: src/Admin/EditScreen.php:917
+#: src/Admin/EditScreen.php:927
+msgid "Cancel this delivery note"
+msgstr ""
+
+#: src/Admin/EditScreen.php:918
+msgid "It keeps its number and stays in the register, saying why it is void. Its quantities go back on the order."
+msgstr ""
+
+#: src/Admin/EditScreen.php:925
+msgid "Why"
+msgstr ""
+
+#: src/Admin/EditScreen.php:949
+msgid "Delete this draft"
+msgstr ""
+
+#: src/Admin/EditScreen.php:1004
+#: src/Admin/OrderMetabox.php:184
+msgid "Download the PDF"
+msgstr ""
+
+#: src/Admin/EditScreen.php:1007
+msgid "Open it to print"
+msgstr ""
+
+#: src/Admin/EditScreen.php:1016
+msgid "Send it"
+msgstr ""
+
+#: src/Admin/EditScreen.php:1024
+msgid "To"
+msgstr ""
+
+#: src/Admin/EditScreen.php:1028
+msgid "Subject"
+msgstr ""
+
+#: src/Admin/EditScreen.php:1032
+msgid "Message"
+msgstr ""
+
+#: src/Admin/EditScreen.php:1035
+msgid "The PDF goes with it as an attachment."
+msgstr ""
+
+#: src/Admin/EditScreen.php:1039
+msgid "Send the delivery note"
+msgstr ""
+
+#: src/Admin/Menu.php:66
+#: src/Admin/OrderMetabox.php:71
+#: src/Admin/Screen.php:79
+msgid "Delivery notes (DDT)"
+msgstr ""
+
+#: src/Admin/Menu.php:67
+msgid "DDT"
+msgstr ""
+
+#: src/Admin/NumberingScreen.php:102
+#: src/Admin/NumberingScreen.php:135
+msgid "Numbering"
+msgstr ""
+
+#: src/Admin/NumberingScreen.php:121
+#: src/Admin/NumberingScreen.php:196
+msgid "You are not allowed to change how delivery notes are numbered."
+msgstr ""
+
+#: src/Admin/NumberingScreen.php:136
+msgid "The next delivery note will be:"
+msgstr ""
+
+#: src/Admin/NumberingScreen.php:141
+msgid "Next number"
+msgstr ""
+
+#: src/Admin/NumberingScreen.php:145
+msgid "Set this before you issue anything, if you are coming from another system and your last delivery note was number 347. Lowering it below a number already used will be refused when that number comes round again: the register will not hold the same number twice."
+msgstr ""
+
+#: src/Admin/NumberingScreen.php:149
+msgid "How it is written"
+msgstr ""
+
+#: src/Admin/NumberingScreen.php:153
+msgid "Use {number}, {year}, {year2} and {series}. For example {number}/{year} gives 125/2026, and DDT-{year}-{number} gives DDT-2026-125."
+msgstr ""
+
+#: src/Admin/NumberingScreen.php:157
+msgid "Leading zeros"
+msgstr ""
+
+#: src/Admin/NumberingScreen.php:160
+msgid "Five gives 00125. Zero gives 125."
+msgstr ""
+
+#: src/Admin/NumberingScreen.php:163
+msgid "Series"
+msgstr ""
+
+#: src/Admin/NumberingScreen.php:167
+msgid "Leave this empty unless you know you need it. One shop, one series. Several series at once is a PRO feature."
+msgstr ""
+
+#: src/Admin/NumberingScreen.php:171
+msgid "Each January"
+msgstr ""
+
+#: src/Admin/NumberingScreen.php:174
+msgid "Start counting again from one"
+msgstr ""
+
+#: src/Admin/NumberingScreen.php:176
+msgid "On by default, which is what most Italian shops do. A delivery note belongs to the year printed on it, not to the day it was issued: one dated the 31st of December and issued on the 2nd of January counts against the old year."
+msgstr ""
+
+#. translators: %s: the next number, as it will be printed.
+#: src/Admin/NumberingScreen.php:250
+#, php-format
+msgid "Saved. The next delivery note will be %s."
+msgstr ""
+
+#. translators: 1: quantity sent, 2: quantity ordered.
+#: src/Admin/OrderMetabox.php:99
+#, php-format
+msgid "%1$s of %2$s sent"
+msgstr ""
+
+#. translators: 1: how many order lines are complete, 2: how many there are.
+#: src/Admin/OrderMetabox.php:113
+#, php-format
+msgid "%1$d of %2$d lines complete"
+msgstr ""
+
+#: src/Admin/OrderMetabox.php:123
+msgid "Nothing has been prepared for this order yet."
+msgstr ""
+
+#: src/Admin/OrderMetabox.php:139
+msgid "New delivery note"
+msgstr ""
+
+#: src/Admin/OrderMetabox.php:146
+msgid "Everything on this order is either sent or on a draft."
+msgstr ""
+
+#: src/Admin/OrderMetabox.php:161
+msgid "Draft"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:74
+msgid "All delivery notes"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:106
+msgid "Nothing matches those filters."
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:107
+msgid "No delivery note has been prepared yet. They start from an order."
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:133
+msgid "Number, customer or order"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:136
+msgid "Year"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:139
+msgid "Any month"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:150
+msgid "Any state"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:160
+msgid "Any reason"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:173
+msgid "Numbers from"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:176
+msgid "to"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:180
+msgid "Filter"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:191
+msgid "Clear"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:208
+msgid "Customer"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:209
+#: templates/pdf/document.php:116
+msgid "Order"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:210
+#: templates/pdf/document.php:141
+msgid "Place of delivery"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:211
+msgid "Reason"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:213
+msgid "State"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:214
+msgid "PDF"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:226
+msgid "(draft)"
+msgstr ""
+
+#: src/Admin/RegisterScreen.php:256
+msgid "Download"
+msgstr ""
+
+#. translators: %s: how many delivery notes matched.
+#: src/Admin/RegisterScreen.php:283
+#, php-format
+msgid "%s delivery note"
+msgid_plural "%s delivery notes"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Admin/SettingsScreen.php:82
+msgid "Settings"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:126
+#: src/Admin/SettingsScreen.php:414
+msgid "Choose the logo"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:127
+msgid "Use this image"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:140
+#: src/Admin/SettingsScreen.php:226
+msgid "You are not allowed to change these settings."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:153
+msgid "Sender"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:154
+msgid "Printed at the top of every delivery note, and copied into each document as it is issued. Changing it later does not rewrite documents already issued."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:158
+msgid "Registered name"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:159
+msgid "VAT number (partita IVA)"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:159
+msgid "Eleven digits. The country prefix and any spaces are removed when it is saved."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:160
+msgid "Tax code (codice fiscale)"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:160
+msgid "For most companies this is the same as the VAT number. One of the two is required."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:164
+msgid "Telephone"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:165
+msgid "Email"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:171
+msgid "Where the goods leave from"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:172
+msgid "Only when it is not the registered address. Leave it empty and the registered address is printed. More than one warehouse is a PRO feature."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:178
+msgid "Deleting the plugin"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:179
+msgid "Stored documents"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:182
+msgid "When OxyDDT is deleted, also delete its delivery notes, numbering and log"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:183
+msgid "Off by default, and it should stay off. Delivery notes are accounting records, and deleting a plugin is often just a way of testing something. Switching the plugin off never removes anything, whatever this says."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:200
+msgid "The sender is complete."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:206
+msgid "The sender is not complete yet. Delivery notes cannot be issued until it is:"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:267
+msgid "Saved."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:268
+msgid "Saved. The sender is not complete yet, so no delivery note can be issued."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:321
+msgid "The registered name is missing."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:322
+msgid "Either a VAT number or a tax code is required."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:323
+msgid "The VAT number is not a valid partita IVA."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:324
+msgid "The tax code is not a valid codice fiscale."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:325
+msgid "The email address is not valid."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:326
+msgid "the street is missing"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:327
+msgid "the town is missing"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:328
+msgid "the CAP has to be five digits"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:329
+msgid "the province has to be two letters"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:330
+msgid "the country code has to be two letters"
+msgstr ""
+
+#. translators: %s: what is wrong, for example "the CAP has to be five digits".
+#: src/Admin/SettingsScreen.php:351
+#, php-format
+msgid "Where the goods leave from: %s."
+msgstr ""
+
+#. translators: %s: what is wrong, for example "the CAP has to be five digits".
+#: src/Admin/SettingsScreen.php:356
+#, php-format
+msgid "Registered address: %s."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:395
+msgid "Street and number"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:396
+msgid "CAP"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:397
+msgid "Town"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:398
+msgid "Province"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:398
+msgid "Two letters, for example MI."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:399
+msgid "Country"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:399
+msgid "Two letters, for example IT."
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:411
+msgid "Logo"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:415
+msgid "Remove"
+msgstr ""
+
+#: src/Admin/SettingsScreen.php:416
+msgid "Printed at the top left of the document. A wide image reads better than a tall one."
+msgstr ""
+
+#. translators: 1: required PHP version, 2: required WordPress version, 3: current PHP version, 4: current WordPress version.
+#: src/Infrastructure/Activator.php:116
+#, php-format
+msgid "OxyDDT needs PHP %1$s or later and WordPress %2$s or later. This site runs PHP %3$s and WordPress %4$s."
+msgstr ""
+
+#: src/Infrastructure/Activator.php:123
+msgid "OxyDDT could not be activated"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:35
+msgid "Sale"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:36
+msgid "On approval"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:37
+msgid "For processing"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:38
+msgid "For repair"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:39
+msgid "Return"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:40
+msgid "Replacement"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:41
+msgid "Gift"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:42
+msgid "Internal transfer"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:43
+msgid "Other"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:68
+msgid "The sender"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:69
+msgid "The recipient"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:70
+msgid "A carrier"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:84
+msgid "Prepaid (the sender pays)"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:85
+msgid "Forward (the recipient pays)"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:100
+msgid "issued"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:102
+msgid "cancelled"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:117
+msgid "Fully sent"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:119
+msgid "Partly sent"
+msgstr ""
+
+#: src/Infrastructure/Labels.php:121
+msgid "Nothing sent yet"
+msgstr ""
+
+#. translators: 1: required WooCommerce version, 2: the WooCommerce version running on this site.
+#: src/Infrastructure/WooCommerce.php:97
+#, php-format
+msgid "OxyDDT needs WooCommerce %1$s or later. This site runs %2$s, so OxyDDT has not been started."
+msgstr ""
+
+#: src/Infrastructure/WooCommerce.php:101
+msgid "OxyDDT needs WooCommerce, which is not active. No delivery note can be issued until it is."
+msgstr ""
+
+#. translators: 1: shop name, 2: delivery note number.
+#: src/Mail/DocumentMailer.php:161
+#, php-format
+msgid "%1$s — delivery note %2$s"
+msgstr ""
+
+#. translators: 1: recipient name, 2: delivery note number, 3: date, 4: shop name.
+#: src/Mail/DocumentMailer.php:176
+#, php-format
+msgid ""
+"Dear %1$s,\n"
+"\n"
+"attached is delivery note %2$s of %3$s for the goods on their way to you.\n"
+"\n"
+"Kind regards,\n"
+"%4$s"
+msgstr ""
+
+#. translators: %s: the reason it was cancelled.
+#: templates/pdf/document.php:82
+#, php-format
+msgid "CANCELLED — %s"
+msgstr ""
+
+#: templates/pdf/document.php:98
+#: templates/pdf/document.php:132
+msgid "VAT no."
+msgstr ""
+
+#: templates/pdf/document.php:101
+#: templates/pdf/document.php:135
+msgid "Tax code"
+msgstr ""
+
+#: templates/pdf/document.php:151
+msgid "Code"
+msgstr ""
+
+#: templates/pdf/document.php:152
+msgid "Description"
+msgstr ""
+
+#: templates/pdf/document.php:154
+msgid "Unit"
+msgstr ""
+
+#: templates/pdf/document.php:175
+msgid "In the care of:"
+msgstr ""
+
+#: templates/pdf/document.php:179
+msgid "Carrier:"
+msgstr ""
+
+#: templates/pdf/document.php:183
+msgid "Carriage:"
+msgstr ""
+
+#: templates/pdf/document.php:187
+msgid "Appearance of the goods:"
+msgstr ""
+
+#: templates/pdf/document.php:191
+msgid "Packages:"
+msgstr ""
+
+#: templates/pdf/document.php:195
+msgid "Gross weight:"
+msgstr ""
+
+#: templates/pdf/document.php:199
+msgid "Net weight:"
+msgstr ""
+
+#: templates/pdf/document.php:217
+msgid "Driver"
+msgstr ""
+
+#: templates/pdf/document.php:227
+msgid "Received by"
+msgstr ""
