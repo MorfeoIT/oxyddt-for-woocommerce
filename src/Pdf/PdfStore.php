@@ -18,21 +18,30 @@ use Oxysoft\OxyDDT\Domain\Document;
  */
 // phpcs:disable WordPress.Security.EscapeOutput.ExceptionNotEscaped
 /**
- * The archive, inside the uploads directory, and not reachable from outside.
+ * The archive, inside the uploads directory.
  *
- * Three things stand between a delivery note and the open web, because one is
- * not enough:
+ * What actually protects an archived delivery note, stated in the order the
+ * protections are worth — because the first draft of this comment overstated it
+ * and a bench on a real host proved it.
  *
- * The directory carries an `.htaccess`, a `web.config` and an `index.php`, so a
- * server that reads any of the three refuses to list or serve it.
+ * **The filename.** Twenty random alphanumeric characters, which is where the
+ * protection really lives: `ddt-14-….pdf` cannot be derived from
+ * `ddt-13-….pdf`, and a directory of them cannot be walked.
  *
- * Every filename carries twenty random characters, so a host that ignores all
- * three still cannot be walked: `ddt-14-....pdf` is not guessable from
- * `ddt-13-....pdf`.
+ * **The endpoint.** Nothing ever links to the file. Downloads go through
+ * admin-post.php, which checks a capability and a nonce first. This is the only
+ * one that is a decision rather than an obstacle — and it is the only one that
+ * governs who may ask for a document by its number.
  *
- * And nothing ever links to the file. Downloads go through an endpoint that
- * checks a capability and a nonce first, which is the only defence that is
- * actually a decision rather than an obstacle.
+ * **The directory guards, where they apply.** The `.htaccess`, `web.config` and
+ * `index.php` written here stop Apache and IIS from listing or serving the
+ * directory. On a host that puts **nginx in front** — which is most managed
+ * hosting, and was the bench this was tested on — nginx serves static files
+ * itself and never reads any of them. So on those hosts the guards do nothing
+ * for the PDF, and anybody holding the URL can fetch it without being logged in.
+ * A host that wants to close that adds a rule of its own; see
+ * `docs/02-architettura.md`. A shop that would rather keep the archive somewhere
+ * else entirely moves it with the `oxyddt_archive_directory` filter.
  */
 final class PdfStore {
 
@@ -65,6 +74,11 @@ final class PdfStore {
 		if ( ! wp_mkdir_p( $absolute ) ) {
 			throw new PdfException( sprintf( 'The archive directory could not be created: %s', $absolute ) );
 		}
+
+		// The year gets its own guards as well. Apache reads a parent .htaccess,
+		// but a host with AllowOverride limited to the directory does not, and the
+		// file costs nothing.
+		$this->harden( $absolute );
 
 		$relative = $directory . '/' . $this->filename( $document );
 
@@ -119,12 +133,43 @@ final class PdfStore {
 	 * @return string
 	 */
 	public function absolute( string $relative ): string {
-		$uploads = wp_upload_dir();
-
-		// Nothing may climb out of uploads, whatever it was handed.
+		// Nothing may climb out of the archive, whatever it was handed.
 		$clean = ltrim( str_replace( array( '..', "\0", '\\' ), '', $relative ), '/' );
 
-		return trailingslashit( (string) $uploads['basedir'] ) . $clean;
+		return trailingslashit( $this->base_directory() ) . $clean;
+	}
+
+	/**
+	 * Where the archive lives.
+	 *
+	 * The uploads directory by default, because it is the one place a WordPress
+	 * install is sure to be able to write. A host that can offer a directory
+	 * outside the document root should: it is the only arrangement in which a
+	 * static file cannot be served to somebody holding its URL, whatever web
+	 * server is in front.
+	 *
+	 * @return string Absolute path, without a trailing slash.
+	 */
+	public function base_directory(): string {
+		$uploads = wp_upload_dir();
+
+		/**
+		 * Filters where archived delivery notes are kept.
+		 *
+		 * Whatever comes back has to be writable by the site and had better not be
+		 * inside a directory the shop serves. Moving it does not move the files
+		 * already there: the path of each is recorded on its document.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param string $directory Absolute path, without a trailing slash.
+		 */
+		$directory = (string) apply_filters(
+			'oxyddt_archive_directory',
+			untrailingslashit( (string) $uploads['basedir'] )
+		);
+
+		return '' === trim( $directory ) ? untrailingslashit( (string) $uploads['basedir'] ) : untrailingslashit( $directory );
 	}
 
 	/**

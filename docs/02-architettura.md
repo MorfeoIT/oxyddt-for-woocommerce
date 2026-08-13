@@ -133,9 +133,43 @@ allegato email) rilegge quel file: la copia del negozio e quella del cliente
 sono la stessa copia. Se il file sparisce (ripristino senza uploads, cambio
 host) viene ricostruito dallo snapshot e il registro lo annota.
 
-La cartella ha `.htaccess`, `web.config` e `index.php`, e ogni nome file finisce
-con venti caratteri casuali — ma la difesa vera è l'endpoint su `admin-post.php`
-che controlla capability e nonce prima di servire i byte.
+### Cosa protegge davvero il PDF archiviato (verificato sul banco, 14/08/2026)
+
+In ordine di quanto valgono:
+
+1. **Il nome del file.** Venti caratteri casuali alfanumerici: `ddt-14-….pdf`
+   non si ricava da `ddt-13-….pdf` e la cartella non si può percorrere.
+2. **L'endpoint.** Nessuno linka mai il file; si passa da `admin-post.php` che
+   controlla capability e nonce. È l'unica difesa che *decide* qualcosa.
+3. **`.htaccess` / `web.config` / `index.php`, dove valgono.**
+
+⚠️ **Il punto 3 non vale su nginx**, ed è il caso più comune. Sul banco Hestia
+(`ph.oxysoft.it`) la prova è netta:
+
+| Richiesta | Risposta |
+|---|---|
+| `…/uploads/oxyddt/` | 403 |
+| `…/uploads/oxyddt/2026/` | 403 |
+| un nome file inventato | 403 |
+| **il PDF vero, con il suo nome** | **200**, `Server: nginx` |
+
+nginx serve i file statici da solo e non legge mai l'`.htaccess`: chi ha l'URL
+scarica il documento senza essere loggato. Su quegli host la difesa è il nome
+del file, e basta.
+
+Chi vuole chiudere anche quella strada ha due modi:
+
+```nginx
+location ~* /wp-content/uploads/oxyddt/.*\.pdf$ { deny all; }
+```
+
+oppure spostare l'archivio fuori dalla document root con il filtro
+`oxyddt_archive_directory`.
+
+**La lezione, che vale oltre questo plugin:** un `.htaccess` scritto da un plugin
+è una dichiarazione d'intenti finché non lo si prova sull'host vero. Il primo
+commento di `PdfStore` diceva «tre difese»: erano due e mezzo, e a scoprirlo è
+stato un `curl`, non una rilettura.
 
 **FREE e PRO sono due plugin separati**, non uno con codice dormiente sbloccato
 da licenza: la linea guida 5 di wordpress.org vieta il trialware. `oxyddt-for-woocommerce`
