@@ -83,19 +83,27 @@ final class OrderSnapshot {
 
 		$tax_ids = self::tax_ids( $order );
 
-		$recipient = new Party(
-			'' !== $company ? $company : $person,
-			new Address(
-				trim( $order->get_billing_address_1() . ' ' . $order->get_billing_address_2() ),
-				$order->get_billing_postcode(),
-				$order->get_billing_city(),
-				strtoupper( $order->get_billing_state() ),
-				strtoupper( $order->get_billing_country() )
-			),
-			$tax_ids['vat_number'],
-			$tax_ids['tax_code'],
-			$order->get_billing_email(),
-			$order->get_billing_phone()
+		// Built through from_array() rather than with `new`, so that the tax
+		// numbers go through the same normalisation as every other way a Party is
+		// made. Constructing one directly here is how "IT 012 345 678 97" ended up
+		// stored verbatim on a document while the same number typed into the
+		// settings was stored as eleven digits — two spellings of one shop, and
+		// nothing that compares them would ever match.
+		$recipient = Party::from_array(
+			array(
+				'name'       => '' !== $company ? $company : $person,
+				'address'    => array(
+					'street'   => trim( $order->get_billing_address_1() . ' ' . $order->get_billing_address_2() ),
+					'postcode' => $order->get_billing_postcode(),
+					'city'     => $order->get_billing_city(),
+					'province' => $order->get_billing_state(),
+					'country'  => '' === $order->get_billing_country() ? 'IT' : $order->get_billing_country(),
+				),
+				'vat_number' => $tax_ids['vat_number'],
+				'tax_code'   => $tax_ids['tax_code'],
+				'email'      => $order->get_billing_email(),
+				'phone'      => $order->get_billing_phone(),
+			)
 		);
 
 		/**
@@ -130,12 +138,14 @@ final class OrderSnapshot {
 
 		$destination = '' === $street && '' === trim( $order->get_shipping_city() )
 			? null
-			: new Address(
-				$street,
-				$order->get_shipping_postcode(),
-				$order->get_shipping_city(),
-				strtoupper( $order->get_shipping_state() ),
-				strtoupper( $order->get_shipping_country() )
+			: Address::from_array(
+				array(
+					'street'   => $street,
+					'postcode' => $order->get_shipping_postcode(),
+					'city'     => $order->get_shipping_city(),
+					'province' => $order->get_shipping_state(),
+					'country'  => '' === $order->get_shipping_country() ? 'IT' : $order->get_shipping_country(),
+				)
 			);
 
 		/**

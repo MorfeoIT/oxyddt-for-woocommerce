@@ -215,6 +215,8 @@ final class DocumentRepositoryTest extends WP_UnitTestCase {
 	 * @return void
 	 */
 	public function test_the_database_refuses_a_duplicate_number(): void {
+		global $wpdb;
+
 		$numbered = $this->draft()->with_details( array() );
 
 		$first = new Document(
@@ -231,9 +233,20 @@ final class DocumentRepositoryTest extends WP_UnitTestCase {
 
 		$this->documents->save( $first );
 
-		$this->expectException( StorageException::class );
+		// The refusal comes from MySQL, and WordPress prints database errors to
+		// the page while testing. Suppressed here only, and restored: a test that
+		// leaves them off hides the next failure.
+		$previous = $wpdb->suppress_errors( true );
 
-		$this->documents->save( $first );
+		try {
+			$this->documents->save( $first );
+
+			$this->fail( 'A second document numbered 125/2026 was accepted.' );
+		} catch ( StorageException $e ) {
+			$this->assertStringContainsString( 'Duplicate', $e->getMessage() );
+		} finally {
+			$wpdb->suppress_errors( $previous );
+		}
 	}
 
 	/**
