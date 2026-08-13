@@ -217,6 +217,8 @@ jobs:
         run: |
           status=0
           for required in oxyddt-for-woocommerce.php readme.txt uninstall.php LICENSE src assets templates \
+                          languages/oxyddt-for-woocommerce.pot \
+                          languages/oxyddt-for-woocommerce-it_IT.mo \
                           vendor/autoload.php vendor/dompdf/dompdf; do
             if [ ! -e "build/oxyddt-for-woocommerce/${required}" ]; then
               echo "::error::${required} is missing from the package."

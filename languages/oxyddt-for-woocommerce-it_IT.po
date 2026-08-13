@@ -1,0 +1,675 @@
+# Italian translation of OxyDDT.
+#
+# The vocabulary is the one a warehouse and an accountant already use — causale,
+# vettore, porto, colli, aspetto esteriore dei beni — rather than a literal
+# rendering of the English. On an Italian delivery note those words are the
+# names of boxes on a form somebody has filled in by hand for thirty years.
+#
+# Copyright (C) 2026 Oxysoft
+# This file is distributed under the same licence as the plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: OxyDDT – Italian Delivery Notes (DDT) for WooCommerce 0.1.0\n"
+"Report-Msgid-Bugs-To: https://oxywp.com/\n"
+"PO-Revision-Date: 2026-08-14 10:00+0200\n"
+"Last-Translator: Oxysoft <info@oxysoft.it>\n"
+"Language-Team: Italiano\n"
+"Language: it_IT\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: oxyddt-for-woocommerce\n"
+
+msgid "Issue Italian delivery notes (documenti di trasporto) from WooCommerce orders: partial fulfilment, protected numbering, immutable issued documents and PDF."
+msgstr "Emetti documenti di trasporto dagli ordini WooCommerce: evasione parziale, numerazione protetta, documenti immutabili dopo l'emissione e PDF."
+
+msgid "OxyDDT needs PHP %1$s or later and WordPress %2$s or later. It has not been started."
+msgstr "OxyDDT richiede PHP %1$s o successivo e WordPress %2$s o successivo. Non è stato avviato."
+
+msgid "You are not allowed to see delivery notes."
+msgstr "Non hai i permessi per vedere i DDT."
+
+msgid "That delivery note does not exist."
+msgstr "Quel DDT non esiste."
+
+msgid "The PDF could not be produced. The site log has the details."
+msgstr "Non è stato possibile produrre il PDF. I dettagli sono nel log del sito."
+
+msgid "You are not allowed to send delivery notes."
+msgstr "Non hai i permessi per inviare i DDT."
+
+msgid "Not sent: check the address, and that the delivery note has been issued."
+msgstr "Non inviato: controlla l'indirizzo e che il DDT sia stato emesso."
+
+msgid "Sent to %s."
+msgstr "Inviato a %s."
+
+msgid "This site could not send the email. That is a mail problem, not a delivery note problem: the document is unchanged."
+msgstr "Il sito non è riuscito a inviare l'email. È un problema di posta, non del DDT: il documento non è cambiato."
+
+msgid "You are not allowed to prepare delivery notes."
+msgstr "Non hai i permessi per preparare i DDT."
+
+msgid "Delivery note"
+msgstr "DDT"
+
+msgid "That order does not exist, so there is nothing to prepare a delivery note from."
+msgstr "Quell'ordine non esiste, quindi non c'è niente da cui preparare un DDT."
+
+msgid "New delivery note for order %s"
+msgstr "Nuovo DDT per l'ordine %s"
+
+msgid "Delivery note %1$s for order %2$s"
+msgstr "DDT %1$s per l'ordine %2$s"
+
+msgid "draft"
+msgstr "bozza"
+
+msgid "Save draft"
+msgstr "Salva la bozza"
+
+msgid "Save and issue"
+msgstr "Salva ed emetti"
+
+msgid "Issuing takes the next number and closes the document. From then on it cannot be changed, only cancelled."
+msgstr "Emettere significa prendere il numero successivo e chiudere il documento. Da quel momento non si può più modificare, solo annullare."
+
+msgid "That order does not exist."
+msgstr "Quell'ordine non esiste."
+
+msgid "This delivery note has been issued and cannot be changed. Cancel it and prepare another."
+msgstr "Questo DDT è stato emesso e non si può modificare. Annullalo e preparane un altro."
+
+msgid "Nothing was going out: put a quantity against at least one line."
+msgstr "Non usciva niente: metti una quantità su almeno una riga."
+
+msgid "Draft saved."
+msgstr "Bozza salvata."
+
+msgid "Draft saved, for more than the order has left. That was allowed because you are permitted to override it."
+msgstr "Bozza salvata, per più di quanto resti sull'ordine. È stato permesso perché hai l'autorizzazione a forzare."
+
+msgid "Saved as a draft: you are not allowed to issue delivery notes."
+msgstr "Salvato come bozza: non hai i permessi per emettere i DDT."
+
+msgid "Saved as a draft, but not issued: %s"
+msgstr "Salvato come bozza, ma non emesso: %s"
+
+msgid "Issued as %s. It cannot be changed now, only cancelled."
+msgstr "Emesso come %s. Ora non si può più modificare, solo annullare."
+
+msgid "You are not allowed to cancel delivery notes."
+msgstr "Non hai i permessi per annullare i DDT."
+
+msgid "Delivery note %s is cancelled. Its quantities are back on the order."
+msgstr "Il DDT %s è annullato. Le sue quantità sono tornate sull'ordine."
+
+msgid "it has already been issued"
+msgstr "è già stato emesso"
+
+msgid "only an issued delivery note can be cancelled"
+msgstr "si può annullare solo un DDT emesso"
+
+msgid "a cancellation has to say why"
+msgstr "un annullamento deve dire perché"
+
+msgid "a number could not be settled on — try again"
+msgstr "non è stato possibile assegnare un numero — riprova"
+
+msgid "nothing is on it"
+msgstr "non c'è niente sopra"
+
+msgid "the reason for transport is missing"
+msgstr "manca la causale del trasporto"
+
+msgid "the date is missing"
+msgstr "manca la data"
+
+msgid "the sender is not complete — see Settings"
+msgstr "il mittente non è completo — vedi Impostazioni"
+
+msgid "the recipient or the destination is not complete"
+msgstr "il destinatario o la destinazione non è completo"
+
+msgid "That draft could not be deleted. An issued delivery note is cancelled, never deleted."
+msgstr "Non è stato possibile eliminare quella bozza. Un DDT emesso si annulla, non si elimina mai."
+
+msgid "Draft deleted."
+msgstr "Bozza eliminata."
+
+msgid "%1$s: %2$s left"
+msgstr "%1$s: ne restano %2$s"
+
+msgid "Nothing was saved: the order does not have that much left. %s."
+msgstr "Non è stato salvato niente: sull'ordine non resta tanta merce. %s."
+
+msgid "Recipient"
+msgstr "Destinatario"
+
+msgid "Delivered to:"
+msgstr "Consegnare a:"
+
+msgid "Taken from the order when this draft was started, and kept as it was: editing the order afterwards does not change a delivery note."
+msgstr "Presi dall'ordine quando è stata aperta questa bozza, e tenuti così: modificare l'ordine dopo non cambia un DDT."
+
+msgid "What is going out"
+msgstr "Cosa esce"
+
+msgid "Product"
+msgstr "Prodotto"
+
+msgid "Ordered"
+msgstr "Ordinato"
+
+msgid "Already sent"
+msgstr "Già spedito"
+
+msgid "On other drafts"
+msgstr "Su altre bozze"
+
+msgid "Available"
+msgstr "Disponibile"
+
+msgid "This note"
+msgstr "Questo DDT"
+
+msgid "Leave a line at zero to keep it for a later delivery note."
+msgstr "Lascia una riga a zero per tenerla per un DDT successivo."
+
+msgid "The document"
+msgstr "Il documento"
+
+msgid "Date"
+msgstr "Data"
+
+msgid "Reason for transport"
+msgstr "Causale del trasporto"
+
+msgid "Required on an Italian delivery note."
+msgstr "Obbligatoria su un documento di trasporto."
+
+msgid "Notes"
+msgstr "Note"
+
+msgid "Transport"
+msgstr "Trasporto"
+
+msgid "In whose care"
+msgstr "Trasporto a cura di"
+
+msgid "— not stated —"
+msgstr "— non indicato —"
+
+msgid "Carrier"
+msgstr "Vettore"
+
+msgid "Carriage"
+msgstr "Porto"
+
+msgid "Packages"
+msgstr "Numero di colli"
+
+msgid "Gross weight"
+msgstr "Peso lordo"
+
+msgid "Net weight"
+msgstr "Peso netto"
+
+msgid "Appearance of the goods"
+msgstr "Aspetto esteriore dei beni"
+
+msgid "Boxes, pallets, loose — what the load looks like from outside."
+msgstr "Scatole, bancali, sfuso — come si presenta il carico da fuori."
+
+msgid "This delivery note has been cancelled: %s"
+msgstr "Questo DDT è stato annullato: %s"
+
+msgid "This delivery note has been issued. It cannot be changed: cancel it and prepare another."
+msgstr "Questo DDT è stato emesso. Non si può modificare: annullalo e preparane un altro."
+
+msgid "Number"
+msgstr "Numero"
+
+msgid "Issued"
+msgstr "Emesso"
+
+msgid "Quantity"
+msgstr "Quantità"
+
+msgid "Cancel this delivery note"
+msgstr "Annulla questo DDT"
+
+msgid "It keeps its number and stays in the register, saying why it is void. Its quantities go back on the order."
+msgstr "Mantiene il suo numero e resta nel registro, dicendo perché è annullato. Le sue quantità tornano sull'ordine."
+
+msgid "Why"
+msgstr "Perché"
+
+msgid "Delete this draft"
+msgstr "Elimina questa bozza"
+
+msgid "Download the PDF"
+msgstr "Scarica il PDF"
+
+msgid "Open it to print"
+msgstr "Aprilo per stamparlo"
+
+msgid "Send it"
+msgstr "Invialo"
+
+msgid "To"
+msgstr "A"
+
+msgid "Subject"
+msgstr "Oggetto"
+
+msgid "Message"
+msgstr "Messaggio"
+
+msgid "The PDF goes with it as an attachment."
+msgstr "Il PDF parte come allegato."
+
+msgid "Send the delivery note"
+msgstr "Invia il DDT"
+
+msgid "Delivery notes (DDT)"
+msgstr "Documenti di trasporto (DDT)"
+
+msgid "DDT"
+msgstr "DDT"
+
+msgid "Numbering"
+msgstr "Numerazione"
+
+msgid "You are not allowed to change how delivery notes are numbered."
+msgstr "Non hai i permessi per cambiare la numerazione dei DDT."
+
+msgid "The next delivery note will be:"
+msgstr "Il prossimo DDT sarà:"
+
+msgid "Next number"
+msgstr "Prossimo numero"
+
+msgid "Set this before you issue anything, if you are coming from another system and your last delivery note was number 347. Lowering it below a number already used will be refused when that number comes round again: the register will not hold the same number twice."
+msgstr "Impostalo prima di emettere qualcosa, se arrivi da un altro gestionale e il tuo ultimo DDT era il 347. Abbassarlo sotto un numero già usato verrà rifiutato quando quel numero tornerà: il registro non tiene due volte lo stesso numero."
+
+msgid "How it is written"
+msgstr "Come si scrive"
+
+msgid "Use {number}, {year}, {year2} and {series}. For example {number}/{year} gives 125/2026, and DDT-{year}-{number} gives DDT-2026-125."
+msgstr "Usa {number}, {year}, {year2} e {series}. Per esempio {number}/{year} dà 125/2026, e DDT-{year}-{number} dà DDT-2026-125."
+
+msgid "Leading zeros"
+msgstr "Zeri iniziali"
+
+msgid "Five gives 00125. Zero gives 125."
+msgstr "Cinque dà 00125. Zero dà 125."
+
+msgid "Series"
+msgstr "Sezionale"
+
+msgid "Leave this empty unless you know you need it. One shop, one series. Several series at once is a PRO feature."
+msgstr "Lascialo vuoto se non sai di averne bisogno. Un negozio, un sezionale. Più sezionali insieme sono una funzione PRO."
+
+msgid "Each January"
+msgstr "Ogni gennaio"
+
+msgid "Start counting again from one"
+msgstr "Ricomincia a contare da uno"
+
+msgid "On by default, which is what most Italian shops do. A delivery note belongs to the year printed on it, not to the day it was issued: one dated the 31st of December and issued on the 2nd of January counts against the old year."
+msgstr "Attivo di default, come fa la maggior parte dei negozi italiani. Un DDT appartiene all'anno stampato sopra, non al giorno in cui è stato emesso: uno datato 31 dicembre ed emesso il 2 gennaio conta sull'anno vecchio."
+
+msgid "Saved. The next delivery note will be %s."
+msgstr "Salvato. Il prossimo DDT sarà %s."
+
+msgid "%1$s of %2$s sent"
+msgstr "%1$s di %2$s spediti"
+
+msgid "%1$d of %2$d lines complete"
+msgstr "%1$d righe su %2$d complete"
+
+msgid "Nothing has been prepared for this order yet."
+msgstr "Per quest'ordine non è ancora stato preparato niente."
+
+msgid "New delivery note"
+msgstr "Nuovo DDT"
+
+msgid "Everything on this order is either sent or on a draft."
+msgstr "Tutto quello che c'è su quest'ordine è spedito o su una bozza."
+
+msgid "Draft"
+msgstr "Bozza"
+
+msgid "All delivery notes"
+msgstr "Tutti i DDT"
+
+msgid "Nothing matches those filters."
+msgstr "Non c'è niente che corrisponda a quei filtri."
+
+msgid "No delivery note has been prepared yet. They start from an order."
+msgstr "Non è ancora stato preparato nessun DDT. Si parte da un ordine."
+
+msgid "Number, customer or order"
+msgstr "Numero, cliente o ordine"
+
+msgid "Year"
+msgstr "Anno"
+
+msgid "Any month"
+msgstr "Qualsiasi mese"
+
+msgid "Any state"
+msgstr "Qualsiasi stato"
+
+msgid "Any reason"
+msgstr "Qualsiasi causale"
+
+msgid "Numbers from"
+msgstr "Numeri da"
+
+msgid "to"
+msgstr "a"
+
+msgid "Filter"
+msgstr "Filtra"
+
+msgid "Clear"
+msgstr "Azzera"
+
+msgid "Customer"
+msgstr "Cliente"
+
+msgid "Order"
+msgstr "Ordine"
+
+msgid "Place of delivery"
+msgstr "Luogo di destinazione"
+
+msgid "Reason"
+msgstr "Causale"
+
+msgid "State"
+msgstr "Stato"
+
+msgid "PDF"
+msgstr "PDF"
+
+msgid "(draft)"
+msgstr "(bozza)"
+
+msgid "Download"
+msgstr "Scarica"
+
+msgid "%s delivery note"
+msgid_plural "%s delivery notes"
+msgstr[0] "%s DDT"
+msgstr[1] "%s DDT"
+
+msgid "Settings"
+msgstr "Impostazioni"
+
+msgid "Choose the logo"
+msgstr "Scegli il logo"
+
+msgid "Use this image"
+msgstr "Usa questa immagine"
+
+msgid "You are not allowed to change these settings."
+msgstr "Non hai i permessi per cambiare queste impostazioni."
+
+msgid "Sender"
+msgstr "Mittente"
+
+msgid "Printed at the top of every delivery note, and copied into each document as it is issued. Changing it later does not rewrite documents already issued."
+msgstr "Stampato in cima a ogni DDT e copiato dentro ogni documento al momento dell'emissione. Cambiarlo dopo non riscrive i documenti già emessi."
+
+msgid "Registered name"
+msgstr "Ragione sociale"
+
+msgid "VAT number (partita IVA)"
+msgstr "Partita IVA"
+
+msgid "Eleven digits. The country prefix and any spaces are removed when it is saved."
+msgstr "Undici cifre. Il prefisso della nazione e gli spazi vengono tolti al salvataggio."
+
+msgid "Tax code (codice fiscale)"
+msgstr "Codice fiscale"
+
+msgid "For most companies this is the same as the VAT number. One of the two is required."
+msgstr "Per la maggior parte delle aziende coincide con la partita IVA. Uno dei due è obbligatorio."
+
+msgid "Telephone"
+msgstr "Telefono"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Where the goods leave from"
+msgstr "Da dove parte la merce"
+
+msgid "Only when it is not the registered address. Leave it empty and the registered address is printed. More than one warehouse is a PRO feature."
+msgstr "Solo se non è la sede legale. Lascialo vuoto e viene stampata la sede legale. Più magazzini sono una funzione PRO."
+
+msgid "Deleting the plugin"
+msgstr "Eliminazione del plugin"
+
+msgid "Stored documents"
+msgstr "Documenti archiviati"
+
+msgid "When OxyDDT is deleted, also delete its delivery notes, numbering and log"
+msgstr "Quando OxyDDT viene eliminato, elimina anche i suoi DDT, la numerazione e il registro"
+
+msgid "Off by default, and it should stay off. Delivery notes are accounting records, and deleting a plugin is often just a way of testing something. Switching the plugin off never removes anything, whatever this says."
+msgstr "Disattivato di default, ed è meglio che resti così. I DDT sono documenti contabili, e disinstallare un plugin spesso è solo un modo per provare qualcosa. Disattivare il plugin non toglie mai niente, qualunque cosa dica questa casella."
+
+msgid "The sender is complete."
+msgstr "Il mittente è completo."
+
+msgid "The sender is not complete yet. Delivery notes cannot be issued until it is:"
+msgstr "Il mittente non è ancora completo. Finché non lo è non si possono emettere DDT:"
+
+msgid "Saved."
+msgstr "Salvato."
+
+msgid "Saved. The sender is not complete yet, so no delivery note can be issued."
+msgstr "Salvato. Il mittente non è ancora completo, quindi non si può emettere nessun DDT."
+
+msgid "The registered name is missing."
+msgstr "Manca la ragione sociale."
+
+msgid "Either a VAT number or a tax code is required."
+msgstr "Serve la partita IVA oppure il codice fiscale."
+
+msgid "The VAT number is not a valid partita IVA."
+msgstr "La partita IVA non è valida."
+
+msgid "The tax code is not a valid codice fiscale."
+msgstr "Il codice fiscale non è valido."
+
+msgid "The email address is not valid."
+msgstr "L'indirizzo email non è valido."
+
+msgid "the street is missing"
+msgstr "manca l'indirizzo"
+
+msgid "the town is missing"
+msgstr "manca il comune"
+
+msgid "the CAP has to be five digits"
+msgstr "il CAP deve essere di cinque cifre"
+
+msgid "the province has to be two letters"
+msgstr "la provincia deve essere di due lettere"
+
+msgid "the country code has to be two letters"
+msgstr "il codice della nazione deve essere di due lettere"
+
+msgid "Where the goods leave from: %s."
+msgstr "Da dove parte la merce: %s."
+
+msgid "Registered address: %s."
+msgstr "Sede legale: %s."
+
+msgid "Street and number"
+msgstr "Indirizzo e numero civico"
+
+msgid "CAP"
+msgstr "CAP"
+
+msgid "Town"
+msgstr "Comune"
+
+msgid "Province"
+msgstr "Provincia"
+
+msgid "Two letters, for example MI."
+msgstr "Due lettere, per esempio MI."
+
+msgid "Country"
+msgstr "Nazione"
+
+msgid "Two letters, for example IT."
+msgstr "Due lettere, per esempio IT."
+
+msgid "Logo"
+msgstr "Logo"
+
+msgid "Remove"
+msgstr "Rimuovi"
+
+msgid "Printed at the top left of the document. A wide image reads better than a tall one."
+msgstr "Stampato in alto a sinistra sul documento. Un'immagine larga si legge meglio di una alta."
+
+msgid "OxyDDT needs PHP %1$s or later and WordPress %2$s or later. This site runs PHP %3$s and WordPress %4$s."
+msgstr "OxyDDT richiede PHP %1$s o successivo e WordPress %2$s o successivo. Questo sito ha PHP %3$s e WordPress %4$s."
+
+msgid "OxyDDT could not be activated"
+msgstr "Non è stato possibile attivare OxyDDT"
+
+msgid "Sale"
+msgstr "Vendita"
+
+msgid "On approval"
+msgstr "Conto visione"
+
+msgid "For processing"
+msgstr "Conto lavorazione"
+
+msgid "For repair"
+msgstr "Conto riparazione"
+
+msgid "Return"
+msgstr "Reso"
+
+msgid "Replacement"
+msgstr "Sostituzione"
+
+msgid "Gift"
+msgstr "Omaggio"
+
+msgid "Internal transfer"
+msgstr "Trasferimento interno"
+
+msgid "Other"
+msgstr "Altro"
+
+msgid "The sender"
+msgstr "Mittente"
+
+msgid "The recipient"
+msgstr "Destinatario"
+
+msgid "A carrier"
+msgstr "Vettore"
+
+msgid "Prepaid (the sender pays)"
+msgstr "Franco (paga il mittente)"
+
+msgid "Forward (the recipient pays)"
+msgstr "Assegnato (paga il destinatario)"
+
+msgid "issued"
+msgstr "emesso"
+
+msgid "cancelled"
+msgstr "annullato"
+
+msgid "Fully sent"
+msgstr "Completamente evaso"
+
+msgid "Partly sent"
+msgstr "Parzialmente evaso"
+
+msgid "Nothing sent yet"
+msgstr "Non ancora evaso"
+
+msgid "OxyDDT needs WooCommerce %1$s or later. This site runs %2$s, so OxyDDT has not been started."
+msgstr "OxyDDT richiede WooCommerce %1$s o successivo. Questo sito ha la %2$s, quindi OxyDDT non è stato avviato."
+
+msgid "OxyDDT needs WooCommerce, which is not active. No delivery note can be issued until it is."
+msgstr "OxyDDT richiede WooCommerce, che non è attivo. Finché non lo è non si può emettere nessun DDT."
+
+msgid "%1$s — delivery note %2$s"
+msgstr "%1$s — DDT %2$s"
+
+msgid ""
+"Dear %1$s,\n"
+"\n"
+"attached is delivery note %2$s of %3$s for the goods on their way to you.\n"
+"\n"
+"Kind regards,\n"
+"%4$s"
+msgstr ""
+"Spettabile %1$s,\n"
+"\n"
+"in allegato il DDT %2$s del %3$s relativo alla merce in viaggio verso di voi.\n"
+"\n"
+"Cordiali saluti,\n"
+"%4$s"
+
+msgid "CANCELLED — %s"
+msgstr "ANNULLATO — %s"
+
+msgid "VAT no."
+msgstr "P. IVA"
+
+msgid "Tax code"
+msgstr "Cod. fisc."
+
+msgid "Code"
+msgstr "Codice"
+
+msgid "Description"
+msgstr "Descrizione"
+
+msgid "Unit"
+msgstr "U.M."
+
+msgid "In the care of:"
+msgstr "Trasporto a cura di:"
+
+msgid "Carrier:"
+msgstr "Vettore:"
+
+msgid "Carriage:"
+msgstr "Porto:"
+
+msgid "Appearance of the goods:"
+msgstr "Aspetto esteriore dei beni:"
+
+msgid "Packages:"
+msgstr "Colli:"
+
+msgid "Gross weight:"
+msgstr "Peso lordo:"
+
+msgid "Net weight:"
+msgstr "Peso netto:"
+
+msgid "Driver"
+msgstr "Firma del conducente"
+
+msgid "Received by"
+msgstr "Firma del destinatario"
