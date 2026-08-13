@@ -135,8 +135,9 @@ final class Capabilities {
 
 			if ( null === $role ) {
 				// shop_manager does not exist until WooCommerce has installed its
-				// roles. Leaving the option unwritten is what brings us back here on
-				// the next request, when it will.
+				// roles. Leaving the option unwritten is what brings us back here:
+				// on `init` of this same request if WooCommerce is installing now,
+				// and otherwise on the next request.
 				continue;
 			}
 

@@ -75,6 +75,14 @@ final class Plugin {
 
 		Capabilities::ensure_granted();
 
+		// Asked again, later, for one case: WooCommerce installing itself in this
+		// same request — a bulk activation, or a shop's very first run. Its roles
+		// do not exist yet at plugins_loaded, so the grant above declines to write
+		// its version option and would otherwise wait for the next request, leaving
+		// a shop manager who cannot open anything. When there is nothing to do this
+		// costs one get_option().
+		add_action( 'init', array( Capabilities::class, 'ensure_granted' ), 20 );
+
 		$container = $this->container();
 
 		/**

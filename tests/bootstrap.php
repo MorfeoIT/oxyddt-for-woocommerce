@@ -79,14 +79,29 @@ tests_add_filter(
  *
  * The test suite installs WordPress from scratch and never runs an activation
  * hook, so anything that happens only on activation has to be asked for here.
- * WooCommerce goes first: it is what creates the shop_manager role the
- * capability grants are checked against.
+ *
+ * On `setup_theme`, which is what WooCommerce's own test bootstrap uses, and not
+ * on `wp_install`. Two things go wrong on `wp_install`: WooCommerce's tables do
+ * not exist yet when `init` queries them, which fills the log with database
+ * errors, and its roles do not exist yet either — so the capability grant finds
+ * no shop_manager, declines to write its version option so that a real site
+ * retries on the next request, and in a test run there is no next request.
+ *
+ * setup_theme runs after plugins_loaded and before init, in the main process:
+ * late enough that WooCommerce is installed, early enough that nothing has
+ * asked it a question yet.
  */
 tests_add_filter(
-	'wp_install',
+	'setup_theme',
 	static function (): void {
 		if ( class_exists( 'WC_Install' ) ) {
 			WC_Install::install();
+
+			// Roles live in an option, and WP_Roles read that option before
+			// WooCommerce wrote it. Without rebuilding it, get_role( 'shop_manager' )
+			// keeps answering with what was true a moment ago.
+			$GLOBALS['wp_roles'] = null;
+			wp_roles();
 		}
 
 		( new Oxysoft\OxyDDT\Infrastructure\Migrator() )->migrate();
