@@ -14,6 +14,7 @@ use Oxysoft\OxyDDT\Domain\Document;
 use Oxysoft\OxyDDT\Domain\DocumentNumber;
 use Oxysoft\OxyDDT\Domain\DocumentRepositoryInterface;
 use Oxysoft\OxyDDT\Domain\DocumentStatus;
+use Oxysoft\OxyDDT\Domain\NumberingPolicy;
 use Oxysoft\OxyDDT\Domain\SequenceRepositoryInterface;
 use Oxysoft\OxyDDT\Infrastructure\ClockInterface;
 use Oxysoft\OxyDDT\Persistence\StorageException;
@@ -141,7 +142,29 @@ final class Issuer {
 		// not yet exist as a row. If this fails, nothing has been spent.
 		$saved = $draft->id > 0 ? $draft : $this->documents->save( $draft );
 
-		$policy    = $this->settings->numbering();
+		/**
+		 * Filters the numbering policy a particular document is issued under.
+		 *
+		 * The free plugin has one series and answers with the shop's settings.
+		 * This is where PRO gives a document a sectional of its own — chosen by
+		 * the person preparing it, or by the warehouse it leaves from — without
+		 * anything here knowing that sectionals exist.
+		 *
+		 * The document has been saved and has not been numbered: changing the
+		 * policy at this point changes which counter is about to be asked, which
+		 * is the whole point, and nothing that has already happened.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param NumberingPolicy $policy   The shop's own policy.
+		 * @param Document        $document The document about to be numbered.
+		 */
+		$policy = apply_filters( 'oxyddt_numbering_policy', $this->settings->numbering(), $saved );
+
+		if ( ! $policy instanceof NumberingPolicy ) {
+			$policy = $this->settings->numbering();
+		}
+
 		$now       = $this->clock->now()->format( 'Y-m-d H:i:s' );
 		$this_year = (int) $this->clock->local()->format( 'Y' );
 

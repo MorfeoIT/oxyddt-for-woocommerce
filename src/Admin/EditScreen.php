@@ -232,6 +232,22 @@ final class EditScreen implements Registrable {
 		$this->render_header( $document );
 		$this->render_transport( null === $document ? new Transport() : $document->transport );
 
+		/**
+		 * Fires inside the form that prepares a delivery note, after the fields
+		 * the free plugin draws.
+		 *
+		 * Whatever is printed here is inside the form and is posted with it, so an
+		 * add-on can add a field and read it back from `$_POST` in its own handler
+		 * on `oxyddt_document_saved`. It is how PRO asks which sectional a
+		 * document belongs to.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param Document|null $document The draft being edited, null for a new one.
+		 * @param WC_Order      $order    The order it is being prepared from.
+		 */
+		do_action( 'oxyddt_edit_form_fields', $document, $order );
+
 		echo '<p class="submit">';
 		submit_button( __( 'Save draft', 'oxyddt-for-woocommerce' ), 'secondary', 'save', false );
 
@@ -329,6 +345,22 @@ final class EditScreen implements Registrable {
 			),
 			$saved->id
 		);
+
+		/**
+		 * Fires after a draft has been saved from the screen, before it is issued.
+		 *
+		 * The counterpart of `oxyddt_edit_form_fields`: whatever an add-on added
+		 * to the form is still in `$_POST` here, and the document now has an
+		 * identifier to hang it on. The nonce has already been checked.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param Document $saved    The saved draft.
+		 * @param WC_Order $order    The order it was prepared from.
+		 * @param bool     $issuing  Whether the person also asked to issue it.
+		 */
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_admin_referer() above.
+		do_action( 'oxyddt_document_saved', $saved, $order, isset( $_POST['issue'] ) );
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_admin_referer() above.
 		if ( isset( $_POST['issue'] ) ) {
