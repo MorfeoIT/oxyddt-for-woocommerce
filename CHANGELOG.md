@@ -5,6 +5,22 @@ read; this one is for whoever works on the plugin.
 
 ## [Unreleased]
 
+### Sprint 8 (part) — the bench, and Italian
+
+* A test bench at `test.44123.it/oxyddt`: a clean WordPress with only WooCommerce
+  and plugin-check on it, and the plugin installed the way a release is built.
+  Twenty-four checks of a working day pass there, and **Plugin Check reports no
+  errors**.
+* `Tested up to: 7.0` and `WC tested up to: 11.0` — written after the plugin ran
+  on those versions, not before.
+* The translation template, and **Italian**: 212 strings in the words a warehouse
+  already uses — causale del trasporto, porto franco, colli, aspetto esteriore
+  dei beni, sezionale.
+* The bench found that the `.htaccess` protecting the PDF archive does nothing on
+  a host with nginx in front, which is most of them. The code now says what each
+  defence is worth, and `oxyddt_archive_directory` lets a shop move the archive
+  out of the document root.
+
 ### Sprint 7 — proving it
 
 * **Concurrency, for real.** `scripts/concurrency-check.php` starts twelve

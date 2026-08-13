@@ -14,9 +14,15 @@ non è chiuso.
       negozio: metà senza licenza (il Pro non regala niente, il gratuito resta
       intero), metà con licenza. Impronta `sha1` dei risultati identica prima e
       dopo aver staccato la licenza.
-* [ ] `Tested up to:` nel `readme.txt` — **oggi manca di proposito**. Va scritta
-      la versione di WordPress con cui si è provato **davvero** sul banco, non
-      l'ultima uscita. Stessa cosa per WooCommerce.
+* [x] `Tested up to:` nel `readme.txt` — **fatto il 14/08/2026 sul banco**:
+      WordPress 7.0 e WooCommerce 11.0, le versioni con cui il plugin ha
+      davvero girato. Da rifare a ogni rilascio.
+* [x] **Banco di prova** `https://test.44123.it/oxyddt`: WordPress pulito con
+      solo WooCommerce e plugin-check. Deploy con `git archive` +
+      `composer install --no-dev`, cioè il pacchetto vero. 24 controlli di una
+      giornata di lavoro, Plugin Check senza errori.
+* [x] Traduzione **it_IT** compilata con `wp i18n make-mo` (niente gettext in
+      locale) e verificata su un sito in italiano.
 * [ ] `dati-condivisi/plugin-compat.json` in `C:\Claude\sito-oxysoft` aggiornato
       con versione, `testatoConWordPress` e requisiti.
 * [ ] `.pot` rigenerato (`wp i18n make-pot`) **prima** di costruire il pacchetto.
