@@ -46,9 +46,9 @@ Tabelle previste (nomi definitivi, `{prefix}` è quello del sito):
 | Tabella | Sprint |
 |---|---|
 | `{prefix}oxyddt_logs` | 1 ✅ |
-| `{prefix}oxyddt_documents` | 2 |
-| `{prefix}oxyddt_items` | 2 |
-| `{prefix}oxyddt_orders` | 2 (DDT ↔ ordini, molti a molti) |
+| `{prefix}oxyddt_documents` | 2 ✅ |
+| `{prefix}oxyddt_items` | 2 ✅ |
+| `{prefix}oxyddt_orders` | 2 ✅ (DDT ↔ ordini, molti a molti) |
 | `{prefix}oxyddt_sequences` | 4 |
 | `{prefix}oxyddt_carriers` | 5-6 |
 
@@ -128,7 +128,7 @@ e `oxyddt-for-woocommerce-pro`.
 | Sprint | Contenuto | Stato |
 |---|---|---|
 | 1 | bootstrap, migrazioni, impostazioni azienda, capability | ✅ |
-| 2 | modello DDT, relazione ordine-DDT, snapshot cliente | |
+| 2 | modello DDT, relazione ordine-DDT, snapshot cliente | ✅ |
 | 3 | creazione da ordine, quantità residue, evasione parziale | |
 | 4 | numerazione atomica, emissione, immutabilità, annullamento | |
 | 5 | PDF, download protetto, stampa, email | |

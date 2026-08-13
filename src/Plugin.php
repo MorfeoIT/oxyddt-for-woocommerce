@@ -18,8 +18,10 @@ use Oxysoft\OxyDDT\Infrastructure\Container;
 use Oxysoft\OxyDDT\Infrastructure\Migrator;
 use Oxysoft\OxyDDT\Infrastructure\Registrable;
 use Oxysoft\OxyDDT\Infrastructure\SystemClock;
+use Oxysoft\OxyDDT\Persistence\DocumentRepository;
 use Oxysoft\OxyDDT\Security\Capabilities;
 use Oxysoft\OxyDDT\Settings\Settings;
+use Oxysoft\OxyDDT\WooCommerce\DocumentFactory;
 
 /**
  * Builds the object graph and registers the hooks.
@@ -45,6 +47,16 @@ final class Plugin {
 	 * Service identifier of the audit log.
 	 */
 	public const AUDIT = 'audit.log';
+
+	/**
+	 * Service identifier of the document store.
+	 */
+	public const DOCUMENTS = 'documents';
+
+	/**
+	 * Service identifier of the order-to-draft factory.
+	 */
+	public const DOCUMENT_FACTORY = 'documents.factory';
 
 	/**
 	 * Service identifier of the admin page that holds the tabs.
@@ -141,6 +153,21 @@ final class Plugin {
 		$container->set(
 			self::AUDIT,
 			static fn ( Container $c ): AuditLog => new AuditLog(
+				$c->get_typed( self::CLOCK, ClockInterface::class )
+			)
+		);
+
+		$container->set(
+			self::DOCUMENTS,
+			static fn ( Container $c ): DocumentRepository => new DocumentRepository(
+				$c->get_typed( self::CLOCK, ClockInterface::class )
+			)
+		);
+
+		$container->set(
+			self::DOCUMENT_FACTORY,
+			static fn ( Container $c ): DocumentFactory => new DocumentFactory(
+				$c->get_typed( self::SETTINGS, Settings::class ),
 				$c->get_typed( self::CLOCK, ClockInterface::class )
 			)
 		);
