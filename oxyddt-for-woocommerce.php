@@ -3,7 +3,7 @@
  * Plugin Name:       OxyDDT – Italian Delivery Notes (DDT) for WooCommerce
  * Plugin URI:        https://oxywp.com/plugins/oxyddt-for-woocommerce/
  * Description:       Issue Italian delivery notes (documenti di trasporto) from WooCommerce orders: partial fulfilment, protected numbering, immutable issued documents and PDF.
- * Version:           0.1.0
+ * Version:           0.2.0
  * Requires at least: 6.5
  * Requires PHP:      8.1
  * Requires Plugins:  woocommerce
@@ -29,7 +29,7 @@ use Oxysoft\OxyDDT\Infrastructure\WooCommerce;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION     = '0.1.0';
+const VERSION     = '0.2.0';
 const PLUGIN_FILE = __FILE__;
 const MIN_PHP     = '8.1';
 const MIN_WP      = '6.5';

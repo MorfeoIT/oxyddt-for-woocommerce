@@ -4,7 +4,7 @@ Tags: woocommerce, ddt, delivery note, italy, shipping
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,14 @@ No, unless you turn that on in the settings first. Delivery notes are accounting
 records and the default is to leave them alone.
 
 == Changelog ==
+
+= 0.2.0 =
+* Prices on the delivery note, when a shop wants them: off by default, because a delivery note is not an invoice and most of them are handed to a courier.
+* Your own reasons for transport, added to the nine built in. Removing one never changes a delivery note already issued under it.
+* The carriers you use often, offered beside the field rather than instead of it: the courier used once this year is still typed straight in.
+* Copies on the email: Cc and Bcc, separated however they were pasted. The log records the copies and counts the blind ones without naming them.
+* Delivery notes attached to the WooCommerce emails a shop names, and to no others. Only issued ones, and nothing at all until somebody asks.
+* A delivery note that covers more than one order is shown and no longer saved from the single-order screen, which would have kept one order's goods and dropped the rest.
 
 = 0.1.0 =
 * Delivery notes issued from WooCommerce orders through WooCommerce's own API: the plugin never reads its order tables, so it works whichever way a shop stores them.
