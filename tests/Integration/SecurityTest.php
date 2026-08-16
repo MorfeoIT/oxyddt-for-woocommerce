@@ -206,7 +206,7 @@ final class SecurityTest extends WP_UnitTestCase {
 			new \Oxysoft\OxyDDT\Pdf\PdfService(
 				new \Oxysoft\OxyDDT\Pdf\DompdfRenderer(),
 				$this->archive,
-				new \Oxysoft\OxyDDT\Pdf\DocumentHtml( new Templates() ),
+				new \Oxysoft\OxyDDT\Pdf\DocumentHtml( new Templates(), new Settings() ),
 				$this->documents,
 				new AuditLog( $clock )
 			),
@@ -214,7 +214,7 @@ final class SecurityTest extends WP_UnitTestCase {
 				new \Oxysoft\OxyDDT\Pdf\PdfService(
 					new \Oxysoft\OxyDDT\Pdf\DompdfRenderer(),
 					$this->archive,
-					new \Oxysoft\OxyDDT\Pdf\DocumentHtml( new Templates() ),
+					new \Oxysoft\OxyDDT\Pdf\DocumentHtml( new Templates(), new Settings() ),
 					$this->documents,
 					new AuditLog( $clock )
 				),
