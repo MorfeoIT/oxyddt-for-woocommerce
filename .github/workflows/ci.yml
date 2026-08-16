@@ -236,3 +236,31 @@ jobs:
           name: oxyddt-for-woocommerce-plugin
           path: build/oxyddt-for-woocommerce
           if-no-files-found: error
+
+  conformita:
+    name: Conformita' — la versione dichiarata e' una sola
+    runs-on: ubuntu-latest
+
+    # Il `php -l` su ogni file lo fa gia' il lavoro del pacchetto, qui sopra.
+    # Quello che manca e' l'altra meta': che il numero di versione sia UNO.
+    steps:
+      - uses: actions/checkout@v5
+
+      # Quella dell'intestazione e' la versione che WordPress mostra e con cui
+      # decide se c'e' un aggiornamento; quella del readme e' la versione che
+      # wordpress.org pubblica. Due numeri diversi sono un aggiornamento che
+      # non parte, e nessuno se ne accorge finche' non lo aspetta.
+      - name: La versione e' la stessa nell'intestazione e nel readme
+        run: |
+          PLUGIN=$(grep -m1 -E '^ \* Version:' oxyddt-for-woocommerce.php \
+            | sed 's/.*Version: *//' | tr -d ' \r')
+          README=$(grep -m1 '^Stable tag:' readme.txt \
+            | sed 's/.*Stable tag: *//' | tr -d ' \r')
+
+          echo "intestazione: ${PLUGIN}"
+          echo "readme:       ${README}"
+
+          if [ -z "$PLUGIN" ] || [ "$PLUGIN" != "$README" ]; then
+            echo "le due versioni non coincidono" >&2
+            exit 1
+          fi

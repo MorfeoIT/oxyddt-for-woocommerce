@@ -68,5 +68,21 @@ records and the default is to leave them alone.
 == Changelog ==
 
 = 0.1.0 =
-* First development version: sender configuration, capabilities, schema and
-  audit log.
+* Delivery notes issued from WooCommerce orders through WooCommerce's own API: the plugin never reads its order tables, so it works whichever way a shop stores them.
+* Partial fulfilment: several delivery notes per order, with what is ordered, what has gone out, what is held by another draft and what is still available worked out per line.
+* A cancelled document ships nothing and gives its quantities back to the order; a draft holds goods without sending them; a draft being edited does not count against itself.
+* Numbering handed out by the database, in one statement under a row lock, with a unique index behind it and a retry if a number is ever refused.
+* A number belongs to the year printed on the document: one dated the 31st of December and issued on the 2nd of January counts against the old year.
+* Your own number format, leading zeros, yearly reset, and a starting number for a shop arriving from another system.
+* An issued document refuses every change: correcting one means cancelling it, with a reason, and issuing another. Both stay in the register.
+* The sender, the recipient and the place of delivery are copied onto the document as it is issued, so editing the order afterwards does not rewrite a delivery note already printed.
+* A4 PDF with the shop's logo, rendered once when the document is issued and archived with its SHA-256, so the shop's copy and the customer's are the same file.
+* Downloads and printing go through an endpoint that checks a capability and a nonce; nothing links to the file directly.
+* Manual email with the PDF attached, addressed to the customer as the document froze them. Nothing is ever sent automatically.
+* A register of everything issued, filtered by year and month, number range, reason, carrier and state, and searched by number, customer or order.
+* Seven separate capabilities, granted per role and re-granted when the list changes.
+* An append-only log: who issued what, who cancelled what and why, who moved the counter.
+* Italian translation included.
+* Compatible with WooCommerce high performance order storage: the whole test suite runs twice, once with orders in the posts table and once with HPOS.
+* Nothing is removed when the plugin is switched off, and nothing on uninstall unless the shop turns that on first.
+* No telemetry: the plugin contacts no server of ours, ever.
