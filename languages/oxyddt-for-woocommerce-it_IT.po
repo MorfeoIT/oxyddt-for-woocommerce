@@ -1,619 +1,885 @@
-# Italian translation of OxyDDT.
-#
-# The vocabulary is the one a warehouse and an accountant already use — causale,
-# vettore, porto, colli, aspetto esteriore dei beni — rather than a literal
-# rendering of the English. On an Italian delivery note those words are the
-# names of boxes on a form somebody has filled in by hand for thirty years.
-#
-# Copyright (C) 2026 Oxysoft
-# This file is distributed under the same licence as the plugin.
 msgid ""
 msgstr ""
 "Project-Id-Version: OxyDDT – Italian Delivery Notes (DDT) for WooCommerce 0.1.0\n"
 "Report-Msgid-Bugs-To: https://oxywp.com/\n"
-"PO-Revision-Date: 2026-08-14 10:00+0200\n"
 "Last-Translator: Oxysoft <info@oxysoft.it>\n"
 "Language-Team: Italiano\n"
-"Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-08-16T12:35:43+02:00\n"
+"PO-Revision-Date: 2026-08-14 10:00+0200\n"
+"Language: it_IT\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Domain: oxyddt-for-woocommerce\n"
 
+#. Description of the plugin
+#: oxyddt-for-woocommerce.php
 msgid "Issue Italian delivery notes (documenti di trasporto) from WooCommerce orders: partial fulfilment, protected numbering, immutable issued documents and PDF."
 msgstr "Emetti documenti di trasporto dagli ordini WooCommerce: evasione parziale, numerazione protetta, documenti immutabili dopo l'emissione e PDF."
 
+#. translators: 1: required PHP version, 2: required WordPress version.
+#: oxyddt-for-woocommerce.php:158
+#, php-format
 msgid "OxyDDT needs PHP %1$s or later and WordPress %2$s or later. It has not been started."
 msgstr "OxyDDT richiede PHP %1$s o successivo e WordPress %2$s o successivo. Non è stato avviato."
 
+#: src/Admin/DocumentActions.php:118
+#: src/Admin/RegisterScreen.php:91
+#: src/Admin/Screen.php:70
 msgid "You are not allowed to see delivery notes."
 msgstr "Non hai i permessi per vedere i DDT."
 
+#: src/Admin/DocumentActions.php:128
+#: src/Admin/DocumentActions.php:215
+#: src/Admin/EditScreen.php:489
 msgid "That delivery note does not exist."
 msgstr "Quel DDT non esiste."
 
+#: src/Admin/DocumentActions.php:141
 msgid "The PDF could not be produced. The site log has the details."
 msgstr "Non è stato possibile produrre il PDF. I dettagli sono nel log del sito."
 
+#: src/Admin/DocumentActions.php:191
 msgid "You are not allowed to send delivery notes."
 msgstr "Non hai i permessi per inviare i DDT."
 
+#: src/Admin/DocumentActions.php:225
 msgid "Not sent: check the address, and that the delivery note has been issued."
 msgstr "Non inviato: controlla l'indirizzo e che il DDT sia stato emesso."
 
+#. translators: %s: the email address.
+#: src/Admin/DocumentActions.php:236
+#, php-format
 msgid "Sent to %s."
 msgstr "Inviato a %s."
 
+#: src/Admin/DocumentActions.php:239
 msgid "This site could not send the email. That is a mail problem, not a delivery note problem: the document is unchanged."
 msgstr "Il sito non è riuscito a inviare l'email. È un problema di posta, non del DDT: il documento non è cambiato."
 
+#: src/Admin/EditScreen.php:167
+#: src/Admin/EditScreen.php:312
+#: src/Admin/EditScreen.php:569
 msgid "You are not allowed to prepare delivery notes."
 msgstr "Non hai i permessi per preparare i DDT."
 
+#: src/Admin/EditScreen.php:193
+#: src/Admin/Menu.php:81
+#: src/Admin/Menu.php:82
+#: templates/pdf/document.php:137
 msgid "Delivery note"
 msgstr "DDT"
 
+#: src/Admin/EditScreen.php:195
 msgid "That order does not exist, so there is nothing to prepare a delivery note from."
 msgstr "Quell'ordine non esiste, quindi non c'è niente da cui preparare un DDT."
 
+#. translators: %s: order number.
+#: src/Admin/EditScreen.php:207
+#, php-format
 msgid "New delivery note for order %s"
 msgstr "Nuovo DDT per l'ordine %s"
 
+#. translators: 1: document number or "draft", 2: order number.
+#: src/Admin/EditScreen.php:214
+#, php-format
 msgid "Delivery note %1$s for order %2$s"
 msgstr "DDT %1$s per l'ordine %2$s"
 
+#: src/Admin/EditScreen.php:216
+#: src/Infrastructure/Labels.php:104
 msgid "draft"
 msgstr "bozza"
 
+#: src/Admin/EditScreen.php:282
 msgid "Save draft"
 msgstr "Salva la bozza"
 
+#: src/Admin/EditScreen.php:286
 msgid "Save and issue"
 msgstr "Salva ed emetti"
 
+#: src/Admin/EditScreen.php:288
 msgid "Issuing takes the next number and closes the document. From then on it cannot be changed, only cancelled."
 msgstr "Emettere significa prendere il numero successivo e chiudere il documento. Da quel momento non si può più modificare, solo annullare."
 
+#: src/Admin/EditScreen.php:326
 msgid "That order does not exist."
 msgstr "Quell'ordine non esiste."
 
+#: src/Admin/EditScreen.php:336
 msgid "This delivery note has been issued and cannot be changed. Cancel it and prepare another."
 msgstr "Questo DDT è stato emesso e non si può modificare. Annullalo e preparane un altro."
 
+#: src/Admin/EditScreen.php:357
 msgid "Nothing was going out: put a quantity against at least one line."
 msgstr "Non usciva niente: metti una quantità su almeno una riga."
 
+#: src/Admin/EditScreen.php:414
 msgid "Draft saved."
 msgstr "Bozza salvata."
 
+#: src/Admin/EditScreen.php:415
 msgid "Draft saved, for more than the order has left. That was allowed because you are permitted to override it."
 msgstr "Bozza salvata, per più di quanto resti sull'ordine. È stato permesso perché hai l'autorizzazione a forzare."
 
+#: src/Admin/EditScreen.php:432
 msgid "Saved as a draft: you are not allowed to issue delivery notes."
 msgstr "Salvato come bozza: non hai i permessi per emettere i DDT."
 
+#. translators: %s: what is missing, as a list.
+#: src/Admin/EditScreen.php:445
+#, php-format
 msgid "Saved as a draft, but not issued: %s"
 msgstr "Salvato come bozza, ma non emesso: %s"
 
+#. translators: %s: the number of the delivery note.
+#: src/Admin/EditScreen.php:457
+#, php-format
 msgid "Issued as %s. It cannot be changed now, only cancelled."
 msgstr "Emesso come %s. Ora non si può più modificare, solo annullare."
 
+#: src/Admin/EditScreen.php:473
 msgid "You are not allowed to cancel delivery notes."
 msgstr "Non hai i permessi per annullare i DDT."
 
+#. translators: %s: the number of the delivery note.
+#: src/Admin/EditScreen.php:509
+#, php-format
 msgid "Delivery note %s is cancelled. Its quantities are back on the order."
 msgstr "Il DDT %s è annullato. Le sue quantità sono tornate sull'ordine."
 
+#: src/Admin/EditScreen.php:523
 msgid "it has already been issued"
 msgstr "è già stato emesso"
 
+#: src/Admin/EditScreen.php:524
 msgid "only an issued delivery note can be cancelled"
 msgstr "si può annullare solo un DDT emesso"
 
+#: src/Admin/EditScreen.php:525
 msgid "a cancellation has to say why"
 msgstr "un annullamento deve dire perché"
 
+#: src/Admin/EditScreen.php:526
 msgid "a number could not be settled on — try again"
 msgstr "non è stato possibile assegnare un numero — riprova"
 
+#: src/Admin/EditScreen.php:527
 msgid "nothing is on it"
 msgstr "non c'è niente sopra"
 
+#: src/Admin/EditScreen.php:528
 msgid "the reason for transport is missing"
 msgstr "manca la causale del trasporto"
 
+#: src/Admin/EditScreen.php:529
 msgid "the date is missing"
 msgstr "manca la data"
 
+#: src/Admin/EditScreen.php:542
 msgid "the sender is not complete — see Settings"
 msgstr "il mittente non è completo — vedi Impostazioni"
 
+#: src/Admin/EditScreen.php:548
 msgid "the recipient or the destination is not complete"
 msgstr "il destinatario o la destinazione non è completo"
 
+#: src/Admin/EditScreen.php:585
 msgid "That draft could not be deleted. An issued delivery note is cancelled, never deleted."
 msgstr "Non è stato possibile eliminare quella bozza. Un DDT emesso si annulla, non si elimina mai."
 
+#: src/Admin/EditScreen.php:596
 msgid "Draft deleted."
 msgstr "Bozza eliminata."
 
+#. translators: 1: product name, 2: quantity still available.
+#: src/Admin/EditScreen.php:642
+#, php-format
 msgid "%1$s: %2$s left"
 msgstr "%1$s: ne restano %2$s"
 
+#. translators: %s: list of products and their remaining quantities.
+#: src/Admin/EditScreen.php:650
+#, php-format
 msgid "Nothing was saved: the order does not have that much left. %s."
 msgstr "Non è stato salvato niente: sull'ordine non resta tanta merce. %s."
 
+#: src/Admin/EditScreen.php:771
+#: src/Admin/EditScreen.php:998
+#: templates/pdf/document.php:156
 msgid "Recipient"
 msgstr "Destinatario"
 
+#: src/Admin/EditScreen.php:776
 msgid "Delivered to:"
 msgstr "Consegnare a:"
 
+#: src/Admin/EditScreen.php:782
 msgid "Taken from the order when this draft was started, and kept as it was: editing the order afterwards does not change a delivery note."
 msgstr "Presi dall'ordine quando è stata aperta questa bozza, e tenuti così: modificare l'ordine dopo non cambia un DDT."
 
+#: src/Admin/EditScreen.php:794
 msgid "What is going out"
 msgstr "Cosa esce"
 
+#: src/Admin/EditScreen.php:796
+#: src/Admin/EditScreen.php:1003
 msgid "Product"
 msgstr "Prodotto"
 
+#: src/Admin/EditScreen.php:797
 msgid "Ordered"
 msgstr "Ordinato"
 
+#: src/Admin/EditScreen.php:798
 msgid "Already sent"
 msgstr "Già spedito"
 
+#: src/Admin/EditScreen.php:799
 msgid "On other drafts"
 msgstr "Su altre bozze"
 
+#: src/Admin/EditScreen.php:800
 msgid "Available"
 msgstr "Disponibile"
 
+#: src/Admin/EditScreen.php:801
 msgid "This note"
 msgstr "Questo DDT"
 
+#: src/Admin/EditScreen.php:839
 msgid "Leave a line at zero to keep it for a later delivery note."
 msgstr "Lascia una riga a zero per tenerla per un DDT successivo."
 
+#: src/Admin/EditScreen.php:855
 msgid "The document"
 msgstr "Il documento"
 
+#: src/Admin/EditScreen.php:858
+#: src/Admin/EditScreen.php:994
+#: src/Admin/RegisterScreen.php:207
+#: templates/pdf/document.php:139
 msgid "Date"
 msgstr "Data"
 
+#: src/Admin/EditScreen.php:862
+#: templates/pdf/document.php:141
 msgid "Reason for transport"
 msgstr "Causale del trasporto"
 
+#: src/Admin/EditScreen.php:882
 msgid "Required on an Italian delivery note."
 msgstr "Obbligatoria su un documento di trasporto."
 
+#: src/Admin/EditScreen.php:885
+#: templates/pdf/document.php:258
 msgid "Notes"
 msgstr "Note"
 
+#: src/Admin/EditScreen.php:900
+#: templates/pdf/document.php:225
 msgid "Transport"
 msgstr "Trasporto"
 
+#: src/Admin/EditScreen.php:903
 msgid "In whose care"
 msgstr "Trasporto a cura di"
 
+#: src/Admin/EditScreen.php:905
+#: src/Admin/EditScreen.php:937
 msgid "— not stated —"
 msgstr "— non indicato —"
 
+#: src/Admin/EditScreen.php:914
+#: src/Admin/RegisterScreen.php:172
+#: src/Admin/RegisterScreen.php:212
+#: templates/pdf/document.php:274
 msgid "Carrier"
 msgstr "Vettore"
 
+#: src/Admin/EditScreen.php:935
 msgid "Carriage"
 msgstr "Porto"
 
+#: src/Admin/EditScreen.php:946
 msgid "Packages"
 msgstr "Numero di colli"
 
+#: src/Admin/EditScreen.php:951
 msgid "Gross weight"
 msgstr "Peso lordo"
 
+#: src/Admin/EditScreen.php:954
 msgid "Net weight"
 msgstr "Peso netto"
 
+#: src/Admin/EditScreen.php:959
 msgid "Appearance of the goods"
 msgstr "Aspetto esteriore dei beni"
 
+#: src/Admin/EditScreen.php:962
 msgid "Boxes, pallets, loose — what the load looks like from outside."
 msgstr "Scatole, bancali, sfuso — come si presenta il carico da fuori."
 
+#. translators: %s: the reason it was cancelled.
+#: src/Admin/EditScreen.php:983
+#, php-format
 msgid "This delivery note has been cancelled: %s"
 msgstr "Questo DDT è stato annullato: %s"
 
+#: src/Admin/EditScreen.php:987
 msgid "This delivery note has been issued. It cannot be changed: cancel it and prepare another."
 msgstr "Questo DDT è stato emesso. Non si può modificare: annullalo e preparane un altro."
 
+#: src/Admin/EditScreen.php:992
+#: src/Admin/RegisterScreen.php:206
 msgid "Number"
 msgstr "Numero"
 
+#: src/Admin/EditScreen.php:996
 msgid "Issued"
 msgstr "Emesso"
 
+#: src/Admin/EditScreen.php:1004
+#: templates/pdf/document.php:181
 msgid "Quantity"
 msgstr "Quantità"
 
+#: src/Admin/EditScreen.php:1022
+#: src/Admin/EditScreen.php:1032
 msgid "Cancel this delivery note"
 msgstr "Annulla questo DDT"
 
+#: src/Admin/EditScreen.php:1023
 msgid "It keeps its number and stays in the register, saying why it is void. Its quantities go back on the order."
 msgstr "Mantiene il suo numero e resta nel registro, dicendo perché è annullato. Le sue quantità tornano sull'ordine."
 
+#: src/Admin/EditScreen.php:1030
 msgid "Why"
 msgstr "Perché"
 
+#: src/Admin/EditScreen.php:1054
 msgid "Delete this draft"
 msgstr "Elimina questa bozza"
 
+#: src/Admin/EditScreen.php:1109
+#: src/Admin/OrderMetabox.php:184
 msgid "Download the PDF"
 msgstr "Scarica il PDF"
 
+#: src/Admin/EditScreen.php:1112
 msgid "Open it to print"
 msgstr "Aprilo per stamparlo"
 
+#: src/Admin/EditScreen.php:1121
 msgid "Send it"
 msgstr "Invialo"
 
+#: src/Admin/EditScreen.php:1129
 msgid "To"
 msgstr "A"
 
+#: src/Admin/EditScreen.php:1147
 msgid "Subject"
 msgstr "Oggetto"
 
+#: src/Admin/EditScreen.php:1151
 msgid "Message"
 msgstr "Messaggio"
 
+#: src/Admin/EditScreen.php:1154
 msgid "The PDF goes with it as an attachment."
 msgstr "Il PDF parte come allegato."
 
+#: src/Admin/EditScreen.php:1158
 msgid "Send the delivery note"
 msgstr "Invia il DDT"
 
+#: src/Admin/Menu.php:66
+#: src/Admin/OrderMetabox.php:71
+#: src/Admin/Screen.php:79
 msgid "Delivery notes (DDT)"
 msgstr "Documenti di trasporto (DDT)"
 
+#: src/Admin/Menu.php:67
 msgid "DDT"
 msgstr "DDT"
 
+#: src/Admin/NumberingScreen.php:102
+#: src/Admin/NumberingScreen.php:135
 msgid "Numbering"
 msgstr "Numerazione"
 
+#: src/Admin/NumberingScreen.php:121
+#: src/Admin/NumberingScreen.php:196
 msgid "You are not allowed to change how delivery notes are numbered."
 msgstr "Non hai i permessi per cambiare la numerazione dei DDT."
 
+#: src/Admin/NumberingScreen.php:136
 msgid "The next delivery note will be:"
 msgstr "Il prossimo DDT sarà:"
 
+#: src/Admin/NumberingScreen.php:141
 msgid "Next number"
 msgstr "Prossimo numero"
 
+#: src/Admin/NumberingScreen.php:145
 msgid "Set this before you issue anything, if you are coming from another system and your last delivery note was number 347. Lowering it below a number already used will be refused when that number comes round again: the register will not hold the same number twice."
 msgstr "Impostalo prima di emettere qualcosa, se arrivi da un altro gestionale e il tuo ultimo DDT era il 347. Abbassarlo sotto un numero già usato verrà rifiutato quando quel numero tornerà: il registro non tiene due volte lo stesso numero."
 
+#: src/Admin/NumberingScreen.php:149
 msgid "How it is written"
 msgstr "Come si scrive"
 
+#: src/Admin/NumberingScreen.php:153
 msgid "Use {number}, {year}, {year2} and {series}. For example {number}/{year} gives 125/2026, and DDT-{year}-{number} gives DDT-2026-125."
 msgstr "Usa {number}, {year}, {year2} e {series}. Per esempio {number}/{year} dà 125/2026, e DDT-{year}-{number} dà DDT-2026-125."
 
+#: src/Admin/NumberingScreen.php:157
 msgid "Leading zeros"
 msgstr "Zeri iniziali"
 
+#: src/Admin/NumberingScreen.php:160
 msgid "Five gives 00125. Zero gives 125."
 msgstr "Cinque dà 00125. Zero dà 125."
 
+#: src/Admin/NumberingScreen.php:163
 msgid "Series"
 msgstr "Sezionale"
 
+#: src/Admin/NumberingScreen.php:167
 msgid "Leave this empty unless you know you need it. One shop, one series. Several series at once is a PRO feature."
 msgstr "Lascialo vuoto se non sai di averne bisogno. Un negozio, un sezionale. Più sezionali insieme sono una funzione PRO."
 
+#: src/Admin/NumberingScreen.php:171
 msgid "Each January"
 msgstr "Ogni gennaio"
 
+#: src/Admin/NumberingScreen.php:174
 msgid "Start counting again from one"
 msgstr "Ricomincia a contare da uno"
 
+#: src/Admin/NumberingScreen.php:176
 msgid "On by default, which is what most Italian shops do. A delivery note belongs to the year printed on it, not to the day it was issued: one dated the 31st of December and issued on the 2nd of January counts against the old year."
 msgstr "Attivo di default, come fa la maggior parte dei negozi italiani. Un DDT appartiene all'anno stampato sopra, non al giorno in cui è stato emesso: uno datato 31 dicembre ed emesso il 2 gennaio conta sull'anno vecchio."
 
+#. translators: %s: the next number, as it will be printed.
+#: src/Admin/NumberingScreen.php:250
+#, php-format
 msgid "Saved. The next delivery note will be %s."
 msgstr "Salvato. Il prossimo DDT sarà %s."
 
+#. translators: 1: quantity sent, 2: quantity ordered.
+#: src/Admin/OrderMetabox.php:99
+#, php-format
 msgid "%1$s of %2$s sent"
 msgstr "%1$s di %2$s spediti"
 
+#. translators: 1: how many order lines are complete, 2: how many there are.
+#: src/Admin/OrderMetabox.php:113
+#, php-format
 msgid "%1$d of %2$d lines complete"
 msgstr "%1$d righe su %2$d complete"
 
+#: src/Admin/OrderMetabox.php:123
 msgid "Nothing has been prepared for this order yet."
 msgstr "Per quest'ordine non è ancora stato preparato niente."
 
+#: src/Admin/OrderMetabox.php:139
 msgid "New delivery note"
 msgstr "Nuovo DDT"
 
+#: src/Admin/OrderMetabox.php:146
 msgid "Everything on this order is either sent or on a draft."
 msgstr "Tutto quello che c'è su quest'ordine è spedito o su una bozza."
 
+#: src/Admin/OrderMetabox.php:161
 msgid "Draft"
 msgstr "Bozza"
 
+#: src/Admin/RegisterScreen.php:74
 msgid "All delivery notes"
 msgstr "Tutti i DDT"
 
+#: src/Admin/RegisterScreen.php:106
 msgid "Nothing matches those filters."
 msgstr "Non c'è niente che corrisponda a quei filtri."
 
+#: src/Admin/RegisterScreen.php:107
 msgid "No delivery note has been prepared yet. They start from an order."
 msgstr "Non è ancora stato preparato nessun DDT. Si parte da un ordine."
 
+#: src/Admin/RegisterScreen.php:133
 msgid "Number, customer or order"
 msgstr "Numero, cliente o ordine"
 
+#: src/Admin/RegisterScreen.php:136
 msgid "Year"
 msgstr "Anno"
 
+#: src/Admin/RegisterScreen.php:139
 msgid "Any month"
 msgstr "Qualsiasi mese"
 
+#: src/Admin/RegisterScreen.php:150
 msgid "Any state"
 msgstr "Qualsiasi stato"
 
+#: src/Admin/RegisterScreen.php:160
 msgid "Any reason"
 msgstr "Qualsiasi causale"
 
+#: src/Admin/RegisterScreen.php:173
 msgid "Numbers from"
 msgstr "Numeri da"
 
+#: src/Admin/RegisterScreen.php:176
 msgid "to"
 msgstr "a"
 
+#: src/Admin/RegisterScreen.php:180
 msgid "Filter"
 msgstr "Filtra"
 
+#: src/Admin/RegisterScreen.php:191
 msgid "Clear"
 msgstr "Azzera"
 
+#: src/Admin/RegisterScreen.php:208
 msgid "Customer"
 msgstr "Cliente"
 
+#: src/Admin/RegisterScreen.php:209
+#: templates/pdf/document.php:144
 msgid "Order"
 msgstr "Ordine"
 
+#: src/Admin/RegisterScreen.php:210
+#: templates/pdf/document.php:169
 msgid "Place of delivery"
 msgstr "Luogo di destinazione"
 
+#: src/Admin/RegisterScreen.php:211
 msgid "Reason"
 msgstr "Causale"
 
+#: src/Admin/RegisterScreen.php:213
 msgid "State"
 msgstr "Stato"
 
+#: src/Admin/RegisterScreen.php:214
 msgid "PDF"
 msgstr "PDF"
 
+#: src/Admin/RegisterScreen.php:226
 msgid "(draft)"
 msgstr "(bozza)"
 
+#: src/Admin/RegisterScreen.php:256
 msgid "Download"
 msgstr "Scarica"
 
+#. translators: %s: how many delivery notes matched.
+#: src/Admin/RegisterScreen.php:283
+#, php-format
 msgid "%s delivery note"
 msgid_plural "%s delivery notes"
 msgstr[0] "%s DDT"
 msgstr[1] "%s DDT"
 
+#: src/Admin/SettingsScreen.php:84
 msgid "Settings"
 msgstr "Impostazioni"
 
+#: src/Admin/SettingsScreen.php:128
+#: src/Admin/SettingsScreen.php:600
 msgid "Choose the logo"
 msgstr "Scegli il logo"
 
+#: src/Admin/SettingsScreen.php:129
 msgid "Use this image"
 msgstr "Usa questa immagine"
 
+#: src/Admin/SettingsScreen.php:142
+#: src/Admin/SettingsScreen.php:407
 msgid "You are not allowed to change these settings."
 msgstr "Non hai i permessi per cambiare queste impostazioni."
 
+#: src/Admin/SettingsScreen.php:155
 msgid "Sender"
 msgstr "Mittente"
 
+#: src/Admin/SettingsScreen.php:156
 msgid "Printed at the top of every delivery note, and copied into each document as it is issued. Changing it later does not rewrite documents already issued."
 msgstr "Stampato in cima a ogni DDT e copiato dentro ogni documento al momento dell'emissione. Cambiarlo dopo non riscrive i documenti già emessi."
 
+#: src/Admin/SettingsScreen.php:160
 msgid "Registered name"
 msgstr "Ragione sociale"
 
+#: src/Admin/SettingsScreen.php:161
 msgid "VAT number (partita IVA)"
 msgstr "Partita IVA"
 
+#: src/Admin/SettingsScreen.php:161
 msgid "Eleven digits. The country prefix and any spaces are removed when it is saved."
 msgstr "Undici cifre. Il prefisso della nazione e gli spazi vengono tolti al salvataggio."
 
+#: src/Admin/SettingsScreen.php:162
 msgid "Tax code (codice fiscale)"
 msgstr "Codice fiscale"
 
+#: src/Admin/SettingsScreen.php:162
 msgid "For most companies this is the same as the VAT number. One of the two is required."
 msgstr "Per la maggior parte delle aziende coincide con la partita IVA. Uno dei due è obbligatorio."
 
+#: src/Admin/SettingsScreen.php:166
 msgid "Telephone"
 msgstr "Telefono"
 
+#: src/Admin/SettingsScreen.php:167
 msgid "Email"
 msgstr "Email"
 
+#: src/Admin/SettingsScreen.php:173
 msgid "Where the goods leave from"
 msgstr "Da dove parte la merce"
 
+#: src/Admin/SettingsScreen.php:174
 msgid "Only when it is not the registered address. Leave it empty and the registered address is printed. More than one warehouse is a PRO feature."
 msgstr "Solo se non è la sede legale. Lascialo vuoto e viene stampata la sede legale. Più magazzini sono una funzione PRO."
 
+#: src/Admin/SettingsScreen.php:192
 msgid "Deleting the plugin"
 msgstr "Eliminazione del plugin"
 
+#: src/Admin/SettingsScreen.php:193
 msgid "Stored documents"
 msgstr "Documenti archiviati"
 
+#: src/Admin/SettingsScreen.php:196
 msgid "When OxyDDT is deleted, also delete its delivery notes, numbering and log"
 msgstr "Quando OxyDDT viene eliminato, elimina anche i suoi DDT, la numerazione e il registro"
 
+#: src/Admin/SettingsScreen.php:197
 msgid "Off by default, and it should stay off. Delivery notes are accounting records, and deleting a plugin is often just a way of testing something. Switching the plugin off never removes anything, whatever this says."
 msgstr "Disattivato di default, ed è meglio che resti così. I DDT sono documenti contabili, e disinstallare un plugin spesso è solo un modo per provare qualcosa. Disattivare il plugin non toglie mai niente, qualunque cosa dica questa casella."
 
+#: src/Admin/SettingsScreen.php:381
 msgid "The sender is complete."
 msgstr "Il mittente è completo."
 
+#: src/Admin/SettingsScreen.php:387
 msgid "The sender is not complete yet. Delivery notes cannot be issued until it is:"
 msgstr "Il mittente non è ancora completo. Finché non lo è non si possono emettere DDT:"
 
+#: src/Admin/SettingsScreen.php:453
 msgid "Saved."
 msgstr "Salvato."
 
+#: src/Admin/SettingsScreen.php:454
 msgid "Saved. The sender is not complete yet, so no delivery note can be issued."
 msgstr "Salvato. Il mittente non è ancora completo, quindi non si può emettere nessun DDT."
 
+#: src/Admin/SettingsScreen.php:507
 msgid "The registered name is missing."
 msgstr "Manca la ragione sociale."
 
+#: src/Admin/SettingsScreen.php:508
 msgid "Either a VAT number or a tax code is required."
 msgstr "Serve la partita IVA oppure il codice fiscale."
 
+#: src/Admin/SettingsScreen.php:509
 msgid "The VAT number is not a valid partita IVA."
 msgstr "La partita IVA non è valida."
 
+#: src/Admin/SettingsScreen.php:510
 msgid "The tax code is not a valid codice fiscale."
 msgstr "Il codice fiscale non è valido."
 
+#: src/Admin/SettingsScreen.php:511
 msgid "The email address is not valid."
 msgstr "L'indirizzo email non è valido."
 
+#: src/Admin/SettingsScreen.php:512
 msgid "the street is missing"
 msgstr "manca l'indirizzo"
 
+#: src/Admin/SettingsScreen.php:513
 msgid "the town is missing"
 msgstr "manca il comune"
 
+#: src/Admin/SettingsScreen.php:514
 msgid "the CAP has to be five digits"
 msgstr "il CAP deve essere di cinque cifre"
 
+#: src/Admin/SettingsScreen.php:515
 msgid "the province has to be two letters"
 msgstr "la provincia deve essere di due lettere"
 
+#: src/Admin/SettingsScreen.php:516
 msgid "the country code has to be two letters"
 msgstr "il codice della nazione deve essere di due lettere"
 
+#. translators: %s: what is wrong, for example "the CAP has to be five digits".
+#: src/Admin/SettingsScreen.php:537
+#, php-format
 msgid "Where the goods leave from: %s."
 msgstr "Da dove parte la merce: %s."
 
+#. translators: %s: what is wrong, for example "the CAP has to be five digits".
+#: src/Admin/SettingsScreen.php:542
+#, php-format
 msgid "Registered address: %s."
 msgstr "Sede legale: %s."
 
+#: src/Admin/SettingsScreen.php:581
 msgid "Street and number"
 msgstr "Indirizzo e numero civico"
 
+#: src/Admin/SettingsScreen.php:582
 msgid "CAP"
 msgstr "CAP"
 
+#: src/Admin/SettingsScreen.php:583
 msgid "Town"
 msgstr "Comune"
 
+#: src/Admin/SettingsScreen.php:584
 msgid "Province"
 msgstr "Provincia"
 
+#: src/Admin/SettingsScreen.php:584
 msgid "Two letters, for example MI."
 msgstr "Due lettere, per esempio MI."
 
+#: src/Admin/SettingsScreen.php:585
 msgid "Country"
 msgstr "Nazione"
 
+#: src/Admin/SettingsScreen.php:585
 msgid "Two letters, for example IT."
 msgstr "Due lettere, per esempio IT."
 
+#: src/Admin/SettingsScreen.php:597
 msgid "Logo"
 msgstr "Logo"
 
+#: src/Admin/SettingsScreen.php:601
 msgid "Remove"
 msgstr "Rimuovi"
 
+#: src/Admin/SettingsScreen.php:602
 msgid "Printed at the top left of the document. A wide image reads better than a tall one."
 msgstr "Stampato in alto a sinistra sul documento. Un'immagine larga si legge meglio di una alta."
 
+#. translators: 1: required PHP version, 2: required WordPress version, 3: current PHP version, 4: current WordPress version.
+#: src/Infrastructure/Activator.php:116
+#, php-format
 msgid "OxyDDT needs PHP %1$s or later and WordPress %2$s or later. This site runs PHP %3$s and WordPress %4$s."
 msgstr "OxyDDT richiede PHP %1$s o successivo e WordPress %2$s o successivo. Questo sito ha PHP %3$s e WordPress %4$s."
 
+#: src/Infrastructure/Activator.php:123
 msgid "OxyDDT could not be activated"
 msgstr "Non è stato possibile attivare OxyDDT"
 
+#: src/Infrastructure/Labels.php:35
 msgid "Sale"
 msgstr "Vendita"
 
+#: src/Infrastructure/Labels.php:36
 msgid "On approval"
 msgstr "Conto visione"
 
+#: src/Infrastructure/Labels.php:37
 msgid "For processing"
 msgstr "Conto lavorazione"
 
+#: src/Infrastructure/Labels.php:38
 msgid "For repair"
 msgstr "Conto riparazione"
 
+#: src/Infrastructure/Labels.php:39
 msgid "Return"
 msgstr "Reso"
 
+#: src/Infrastructure/Labels.php:40
 msgid "Replacement"
 msgstr "Sostituzione"
 
+#: src/Infrastructure/Labels.php:41
 msgid "Gift"
 msgstr "Omaggio"
 
+#: src/Infrastructure/Labels.php:42
 msgid "Internal transfer"
 msgstr "Trasferimento interno"
 
+#: src/Infrastructure/Labels.php:43
 msgid "Other"
 msgstr "Altro"
 
+#: src/Infrastructure/Labels.php:68
 msgid "The sender"
 msgstr "Mittente"
 
+#: src/Infrastructure/Labels.php:69
 msgid "The recipient"
 msgstr "Destinatario"
 
+#: src/Infrastructure/Labels.php:70
 msgid "A carrier"
 msgstr "Vettore"
 
+#: src/Infrastructure/Labels.php:84
 msgid "Prepaid (the sender pays)"
 msgstr "Franco (paga il mittente)"
 
+#: src/Infrastructure/Labels.php:85
 msgid "Forward (the recipient pays)"
 msgstr "Assegnato (paga il destinatario)"
 
+#: src/Infrastructure/Labels.php:100
 msgid "issued"
 msgstr "emesso"
 
+#: src/Infrastructure/Labels.php:102
 msgid "cancelled"
 msgstr "annullato"
 
+#: src/Infrastructure/Labels.php:117
 msgid "Fully sent"
 msgstr "Completamente evaso"
 
+#: src/Infrastructure/Labels.php:119
 msgid "Partly sent"
 msgstr "Parzialmente evaso"
 
+#: src/Infrastructure/Labels.php:121
 msgid "Nothing sent yet"
 msgstr "Non ancora evaso"
 
+#. translators: 1: required WooCommerce version, 2: the WooCommerce version running on this site.
+#: src/Infrastructure/WooCommerce.php:97
+#, php-format
 msgid "OxyDDT needs WooCommerce %1$s or later. This site runs %2$s, so OxyDDT has not been started."
 msgstr "OxyDDT richiede WooCommerce %1$s o successivo. Questo sito ha la %2$s, quindi OxyDDT non è stato avviato."
 
+#: src/Infrastructure/WooCommerce.php:101
 msgid "OxyDDT needs WooCommerce, which is not active. No delivery note can be issued until it is."
 msgstr "OxyDDT richiede WooCommerce, che non è attivo. Finché non lo è non si può emettere nessun DDT."
 
+#. translators: 1: shop name, 2: delivery note number.
+#: src/Mail/DocumentMailer.php:205
+#, php-format
 msgid "%1$s — delivery note %2$s"
 msgstr "%1$s — DDT %2$s"
 
+#. translators: 1: recipient name, 2: delivery note number, 3: date, 4: shop name.
+#: src/Mail/DocumentMailer.php:220
+#, php-format
 msgid ""
 "Dear %1$s,\n"
 "\n"
@@ -629,47 +895,186 @@ msgstr ""
 "Cordiali saluti,\n"
 "%4$s"
 
+#. translators: %s: the reason it was cancelled.
+#: templates/pdf/document.php:110
+#, php-format
 msgid "CANCELLED — %s"
 msgstr "ANNULLATO — %s"
 
+#: templates/pdf/document.php:126
+#: templates/pdf/document.php:160
 msgid "VAT no."
 msgstr "P. IVA"
 
+#: templates/pdf/document.php:129
+#: templates/pdf/document.php:163
 msgid "Tax code"
 msgstr "Cod. fisc."
 
+#: templates/pdf/document.php:179
 msgid "Code"
 msgstr "Codice"
 
+#: templates/pdf/document.php:180
 msgid "Description"
 msgstr "Descrizione"
 
+#: templates/pdf/document.php:182
 msgid "Unit"
 msgstr "U.M."
 
+#: templates/pdf/document.php:227
 msgid "In the care of:"
 msgstr "Trasporto a cura di:"
 
+#: templates/pdf/document.php:231
 msgid "Carrier:"
 msgstr "Vettore:"
 
+#: templates/pdf/document.php:235
 msgid "Carriage:"
 msgstr "Porto:"
 
+#: templates/pdf/document.php:239
 msgid "Appearance of the goods:"
 msgstr "Aspetto esteriore dei beni:"
 
+#: templates/pdf/document.php:243
 msgid "Packages:"
 msgstr "Colli:"
 
+#: templates/pdf/document.php:247
 msgid "Gross weight:"
 msgstr "Peso lordo:"
 
+#: templates/pdf/document.php:251
 msgid "Net weight:"
 msgstr "Peso netto:"
 
+#: templates/pdf/document.php:269
 msgid "Driver"
 msgstr "Firma del conducente"
 
+#: templates/pdf/document.php:279
 msgid "Received by"
 msgstr "Firma del destinatario"
+
+#. Plugin Name of the plugin
+#: oxyddt-for-woocommerce.php
+msgid "OxyDDT – Italian Delivery Notes (DDT) for WooCommerce"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: oxyddt-for-woocommerce.php
+msgid "https://oxywp.com/plugins/oxyddt-for-woocommerce/"
+msgstr ""
+
+#. Author of the plugin
+#: oxyddt-for-woocommerce.php
+msgid "Oxysoft"
+msgstr ""
+
+#. Author URI of the plugin
+#: oxyddt-for-woocommerce.php
+msgid "https://oxysoft.it/"
+msgstr ""
+
+#: src/Admin/EditScreen.php:243
+msgid "This delivery note covers more than one order. It is shown here but cannot be changed from this screen, which only knows about one order at a time — saving it here would drop the goods that came from the others."
+msgstr "Questo DDT copre più di un ordine. Qui si vede soltanto: questa schermata conosce un ordine per volta, e salvarlo da qui farebbe sparire la merce che arriva dagli altri."
+
+#: src/Admin/EditScreen.php:345
+msgid "This delivery note covers more than one order, and this screen only knows about one. Saving it here would drop the goods that came from the others."
+msgstr "Questo DDT copre più di un ordine e questa schermata ne conosce uno solo. Salvarlo da qui farebbe sparire la merce che arriva dagli altri."
+
+#: src/Admin/EditScreen.php:1137
+msgid "Copy to"
+msgstr "Copia a"
+
+#: src/Admin/EditScreen.php:1139
+msgid "Separated however you like — commas, semicolons or spaces. They are shown to everybody who gets the message."
+msgstr "Separati come preferisci: virgole, punti e virgola o spazi. Sono visibili a tutti quelli che ricevono il messaggio."
+
+#: src/Admin/EditScreen.php:1142
+msgid "Blind copy to"
+msgstr "Copia nascosta a"
+
+#: src/Admin/EditScreen.php:1144
+msgid "Nobody else sees these. The log records how many there were, not who they were."
+msgstr "Questi non li vede nessun altro. Il registro annota quante erano, non chi erano."
+
+#: src/Admin/SettingsScreen.php:180
+msgid "What is printed"
+msgstr "Cosa viene stampato"
+
+#: src/Admin/SettingsScreen.php:181
+msgid "Prices"
+msgstr "Prezzi"
+
+#: src/Admin/SettingsScreen.php:184
+msgid "Print unit prices and amounts on the delivery note"
+msgstr "Stampa prezzi unitari e importi sul DDT"
+
+#: src/Admin/SettingsScreen.php:185
+msgid "Off by default: a delivery note is not an invoice, and most shops hand one to a courier. The figures come from the order, net of tax and after any discount, and they are recorded on every line whatever this says — turning it on changes what is printed from now on, never a document already issued."
+msgstr "Spento di serie: un DDT non è una fattura, e quasi sempre finisce in mano a un corriere. Le cifre arrivano dall'ordine, al netto dell'IVA e già scontate, e restano registrate su ogni riga comunque: accendere questa opzione cambia ciò che si stampa d'ora in poi, mai un documento già emesso."
+
+#: src/Admin/SettingsScreen.php:306
+msgid "Reasons for transport"
+msgstr "Causali del trasporto"
+
+#: src/Admin/SettingsScreen.php:308
+msgid "Your own reasons"
+msgstr "Le tue causali"
+
+#: src/Admin/SettingsScreen.php:312
+msgid "One per line, added to the nine the plugin ships with. Write the words you want printed; a code is worked out from them. To keep a code of your own — the register filters by code — write it first, separated by a vertical bar: conto_deposito|Conto deposito."
+msgstr "Una per riga, in aggiunta alle nove del plugin. Scrivi le parole che vuoi stampate: il codice si ricava da quelle. Per tenerti un codice tuo — il registro filtra per codice — scrivilo prima, separato da una barra verticale: conto_deposito|Conto deposito."
+
+#: src/Admin/SettingsScreen.php:315
+msgid "Removing one here never changes a delivery note already issued: a document keeps the reason it was issued with."
+msgstr "Toglierne una qui non cambia mai un DDT già emesso: un documento conserva la causale con cui è stato emesso."
+
+#: src/Admin/SettingsScreen.php:329
+msgid "Carriers"
+msgstr "Vettori"
+
+#: src/Admin/SettingsScreen.php:331
+msgid "The ones you use"
+msgstr "Quelli che usi"
+
+#: src/Admin/SettingsScreen.php:335
+msgid "One per line. They are offered beside the carrier field when a delivery note is prepared, and the field stays free text: a courier used once does not have to be added here first. Addresses, tax numbers and a default carrier per shipping method are a PRO feature."
+msgstr "Uno per riga. Vengono proposti accanto al campo del vettore quando si prepara un DDT, e il campo resta libero: un corriere usato una volta sola non deve essere aggiunto qui prima. Indirizzi, partite IVA e un vettore predefinito per metodo di spedizione sono una funzione PRO."
+
+#: src/Admin/SettingsScreen.php:350
+msgid "Delivery notes on WooCommerce emails"
+msgstr "DDT sulle email di WooCommerce"
+
+#: src/Admin/SettingsScreen.php:352
+msgid "Everything else this plugin sends is a button somebody pressed. This is the one place where a file leaves the shop because a status changed, so it does nothing until you name the emails. Only issued delivery notes are attached: a draft has no number, and a cancelled one says on its face that it is void."
+msgstr "Tutto il resto che questo plugin manda è un bottone che qualcuno ha premuto. Questo è l'unico punto in cui un file esce dal negozio perché è cambiato uno stato, quindi non fa niente finché non indichi tu le email. Vengono allegati solo i DDT emessi: una bozza non ha numero, e un annullato dice da sé che è nullo."
+
+#: src/Admin/SettingsScreen.php:356
+msgid "WooCommerce has not listed its emails yet. Save the settings once from this screen with WooCommerce active and they will appear."
+msgstr "WooCommerce non ha ancora elencato le sue email. Salva una volta le impostazioni da questa schermata con WooCommerce attivo e compariranno."
+
+#: src/Admin/SettingsScreen.php:362
+msgid "Attach to"
+msgstr "Allega a"
+
+#: templates/pdf/document.php:184
+msgid "Unit price"
+msgstr "Prezzo unitario"
+
+#: templates/pdf/document.php:185
+msgid "Amount"
+msgstr "Importo"
+
+#: templates/pdf/document.php:207
+msgid "Total, net of tax"
+msgstr "Totale, IVA esclusa"
+
+#: templates/pdf/document.php:217
+msgid "Amounts are net of tax and are stated for the goods listed above. This document is not an invoice."
+msgstr "Gli importi sono al netto dell'IVA e si riferiscono alla merce elencata sopra. Questo documento non è una fattura."
