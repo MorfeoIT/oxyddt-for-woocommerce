@@ -163,6 +163,22 @@ final class DocumentActions implements Registrable {
 	}
 
 	/**
+	 * A copy field, as somebody pasted it.
+	 *
+	 * Commas, semicolons, spaces and newlines all separate: which one arrives
+	 * depends on the mail client the addresses were copied out of, and asking a
+	 * warehouse to remember which one is not a rule anybody will follow.
+	 *
+	 * @param string $field The field.
+	 * @return list<string>
+	 */
+	private static function split_addresses( string $field ): array {
+		$parts = preg_split( '/[,;\s]+/', $field );
+
+		return array_values( array_filter( is_array( $parts ) ? $parts : array() ) );
+	}
+
+	/**
 	 * Email a delivery note.
 	 *
 	 * @return void
@@ -188,6 +204,10 @@ final class DocumentActions implements Registrable {
 		$subject = isset( $_POST['subject'] ) ? sanitize_text_field( wp_unslash( $_POST['subject'] ) ) : '';
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_admin_referer() above.
 		$message = isset( $_POST['message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['message'] ) ) : '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_admin_referer() above.
+		$cc = isset( $_POST['cc'] ) ? self::split_addresses( sanitize_text_field( wp_unslash( $_POST['cc'] ) ) ) : array();
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_admin_referer() above.
+		$bcc = isset( $_POST['bcc'] ) ? self::split_addresses( sanitize_text_field( wp_unslash( $_POST['bcc'] ) ) ) : array();
 
 		$document = $this->documents->find( $document_id );
 
@@ -196,7 +216,7 @@ final class DocumentActions implements Registrable {
 		}
 
 		try {
-			$sent = $this->mailer->send( $document, $to, $subject, $message );
+			$sent = $this->mailer->send( $document, $to, $subject, $message, $cc, $bcc );
 		} catch ( MailException $e ) {
 			$this->back(
 				$order_id,

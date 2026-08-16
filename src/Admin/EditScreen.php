@@ -23,6 +23,7 @@ use Oxysoft\OxyDDT\Infrastructure\Registrable;
 use Oxysoft\OxyDDT\Issuing\IssueException;
 use Oxysoft\OxyDDT\Issuing\Issuer;
 use Oxysoft\OxyDDT\Security\Capabilities;
+use Oxysoft\OxyDDT\Settings\Settings;
 use Oxysoft\OxyDDT\WooCommerce\DocumentFactory;
 use Oxysoft\OxyDDT\WooCommerce\OrderFulfilment;
 use WC_Order;
@@ -89,6 +90,13 @@ final class EditScreen implements Registrable {
 	private DocumentMailer $mailer;
 
 	/**
+	 * The settings, for the reasons and the carriers a shop offers itself.
+	 *
+	 * @var Settings
+	 */
+	private Settings $settings;
+
+	/**
 	 * Build the screen.
 	 *
 	 * @param DocumentRepositoryInterface $documents  The document store.
@@ -97,6 +105,7 @@ final class EditScreen implements Registrable {
 	 * @param AuditLog                    $log        The register.
 	 * @param Issuer                      $issuer     Issuing and cancelling.
 	 * @param DocumentMailer              $mailer     The mailer.
+	 * @param Settings                    $settings   The settings.
 	 */
 	public function __construct(
 		DocumentRepositoryInterface $documents,
@@ -104,7 +113,8 @@ final class EditScreen implements Registrable {
 		OrderFulfilment $fulfilment,
 		AuditLog $log,
 		Issuer $issuer,
-		DocumentMailer $mailer
+		DocumentMailer $mailer,
+		Settings $settings
 	) {
 		$this->documents  = $documents;
 		$this->drafts     = $drafts;
@@ -112,6 +122,7 @@ final class EditScreen implements Registrable {
 		$this->log        = $log;
 		$this->issuer     = $issuer;
 		$this->mailer     = $mailer;
+		$this->settings   = $settings;
 	}
 
 	/**
@@ -219,6 +230,25 @@ final class EditScreen implements Registrable {
 			return;
 		}
 
+		/*
+		 * A draft that gathers several orders is shown, and not offered for
+		 * editing. This screen builds its quantity table from one order's
+		 * outstanding lines, so saving from here would keep that order's goods
+		 * and silently drop everybody else's — data loss that looks like a
+		 * successful save. The schema has always allowed such documents, so this
+		 * guard is not about PRO: it is about what this screen can honestly do.
+		 */
+		if ( null !== $document && self::spans_several_orders( $document ) ) {
+			echo '<div class="notice notice-warning"><p>'
+				. esc_html__( 'This delivery note covers more than one order. It is shown here but cannot be changed from this screen, which only knows about one order at a time — saving it here would drop the goods that came from the others.', 'oxyddt-for-woocommerce' )
+				. '</p></div>';
+
+			$this->render_closed( $document );
+			echo '</div>';
+
+			return;
+		}
+
 		$fulfilment = $this->fulfilment->for_order( $order, $document_id );
 
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
@@ -304,6 +334,15 @@ final class EditScreen implements Registrable {
 				$document_id,
 				'error',
 				__( 'This delivery note has been issued and cannot be changed. Cancel it and prepare another.', 'oxyddt-for-woocommerce' )
+			);
+		}
+
+		if ( null !== $document && self::spans_several_orders( $document ) ) {
+			$this->back_to(
+				$order_id,
+				$document_id,
+				'error',
+				__( 'This delivery note covers more than one order, and this screen only knows about one. Saving it here would drop the goods that came from the others.', 'oxyddt-for-woocommerce' )
 			);
 		}
 
@@ -614,6 +653,21 @@ final class EditScreen implements Registrable {
 	}
 
 	/**
+	 * Whether a document draws on more than one order.
+	 *
+	 * Public because it is the whole of the guard: this screen builds its
+	 * quantity table from one order, so a document that gathers several cannot
+	 * be edited here without losing the rest. An add-on that offers such
+	 * documents asks the same question, with the same answer.
+	 *
+	 * @param Document $document The document.
+	 * @return bool
+	 */
+	public static function spans_several_orders( Document $document ): bool {
+		return count( $document->all_order_ids() ) > 1;
+	}
+
+	/**
 	 * The lines somebody typed, as document lines.
 	 *
 	 * Quantities are read against what the order says, never against what the
@@ -808,17 +862,20 @@ final class EditScreen implements Registrable {
 		echo '<tr><th scope="row"><label for="oxyddt-causal">' . esc_html__( 'Reason for transport', 'oxyddt-for-woocommerce' ) . '</label></th><td>';
 		echo '<select id="oxyddt-causal" name="causal">';
 
-		$known = Causals::defaults();
+		$known = $this->settings->causals();
 
-		if ( ! in_array( $causal, $known, true ) ) {
-			// A reason the shop added itself, or one it has since removed. An issued
-			// document keeps whatever it was issued with.
-			echo '<option value="' . esc_attr( $causal ) . '" selected>' . esc_html( $causal ) . '</option>';
+		if ( ! isset( $known[ $causal ] ) ) {
+			// A reason the shop has since removed. An issued document keeps whatever
+			// it was issued with, and a draft prepared under it does not lose it
+			// because somebody tidied the settings this morning.
+			echo '<option value="' . esc_attr( $causal ) . '" selected>' . esc_html( Labels::causal( $causal ) ) . '</option>';
 		}
 
-		foreach ( $known as $code ) {
+		foreach ( $known as $code => $label ) {
+			// A shop's own reason prints the words it typed; ours go through the
+			// translations. Both arrive here as a code.
 			echo '<option value="' . esc_attr( $code ) . '"' . selected( $causal, $code, false ) . '>'
-				. esc_html( Labels::causal( $code ) ) . '</option>';
+				. esc_html( '' === $label ? Labels::causal( $code ) : $label ) . '</option>';
 		}
 
 		echo '</select>';
@@ -855,8 +912,24 @@ final class EditScreen implements Registrable {
 		echo '</select></td></tr>';
 
 		echo '<tr><th scope="row"><label for="oxyddt-carrier">' . esc_html__( 'Carrier', 'oxyddt-for-woocommerce' ) . '</label></th><td>';
-		echo '<input type="text" id="oxyddt-carrier" name="carrier_name" class="regular-text" value="'
+		echo '<input type="text" id="oxyddt-carrier" name="carrier_name" class="regular-text" list="oxyddt-carriers" value="'
 			. esc_attr( $transport->carrier_name ) . '" />';
+
+		// A datalist rather than a select: the shop's usual carriers are one
+		// keystroke away, and the courier used once this year is still typed
+		// straight in. A closed list would make the rare case the hard case.
+		$carriers = $this->settings->carriers();
+
+		if ( array() !== $carriers ) {
+			echo '<datalist id="oxyddt-carriers">';
+
+			foreach ( $carriers as $carrier ) {
+				echo '<option value="' . esc_attr( $carrier ) . '"></option>';
+			}
+
+			echo '</datalist>';
+		}
+
 		echo '</td></tr>';
 
 		echo '<tr><th scope="row"><label for="oxyddt-carriage">' . esc_html__( 'Carriage', 'oxyddt-for-woocommerce' ) . '</label></th><td>';
@@ -1057,6 +1130,20 @@ final class EditScreen implements Registrable {
 		echo '<input type="email" id="oxyddt-to" name="to" class="regular-text" required value="'
 			. esc_attr( $document->parties->recipient->email ) . '" />';
 		echo '</td></tr>';
+
+		// Copies are typed, not remembered: an accounts address stored in the
+		// settings would put a delivery note in somebody's inbox for years after
+		// they left, and nobody would notice until they wondered why.
+		echo '<tr><th scope="row"><label for="oxyddt-cc">' . esc_html__( 'Copy to', 'oxyddt-for-woocommerce' ) . '</label></th><td>';
+		echo '<input type="text" id="oxyddt-cc" name="cc" class="large-text" value="" />';
+		echo '<p class="description">' . esc_html__( 'Separated however you like — commas, semicolons or spaces. They are shown to everybody who gets the message.', 'oxyddt-for-woocommerce' ) . '</p>';
+		echo '</td></tr>';
+
+		echo '<tr><th scope="row"><label for="oxyddt-bcc">' . esc_html__( 'Blind copy to', 'oxyddt-for-woocommerce' ) . '</label></th><td>';
+		echo '<input type="text" id="oxyddt-bcc" name="bcc" class="large-text" value="" />';
+		echo '<p class="description">' . esc_html__( 'Nobody else sees these. The log records how many there were, not who they were.', 'oxyddt-for-woocommerce' ) . '</p>';
+		echo '</td></tr>';
+
 		echo '<tr><th scope="row"><label for="oxyddt-subject">' . esc_html__( 'Subject', 'oxyddt-for-woocommerce' ) . '</label></th><td>';
 		echo '<input type="text" id="oxyddt-subject" name="subject" class="large-text" value="'
 			. esc_attr( $this->mailer->default_subject( $document ) ) . '" />';

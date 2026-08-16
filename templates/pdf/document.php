@@ -3,9 +3,9 @@
  * The delivery note, as it is printed.
  *
  * Override it by copying this file to `oxyddt/pdf/document.php` in your theme.
- * It is given two things and sees nothing else:
+ * It is given three things and sees nothing else:
  *
- * @var array{document: \Oxysoft\OxyDDT\Domain\Document, logo: string} $data
+ * @var array{document: \Oxysoft\OxyDDT\Domain\Document, logo: string, show_prices: bool} $data
  *
  * @package Oxysoft\OxyDDT
  */
@@ -38,6 +38,34 @@ $document = $data['document'];
  * @var string $logo
  */
 $logo = (string) ( $data['logo'] ?? '' );
+
+/**
+ * Whether the amounts are printed.
+ *
+ * A delivery note is not an invoice and most shops hand one to a courier, so
+ * this is off unless somebody turned it on. The figures are net of tax and
+ * after any discount: they are what the order charged, not a fresh price list.
+ *
+ * @var bool $show_prices
+ */
+$show_prices = ! empty( $data['show_prices'] );
+
+// Only when there is something to print. A column of empty cells on every line
+// is worse than no column: it reads as a shop that forgot to fill it in.
+foreach ( $document->lines as $line ) {
+	if ( null === $line->unit_price ) {
+		$show_prices = false;
+		break;
+	}
+}
+
+$total = 0.0;
+
+if ( $show_prices ) {
+	foreach ( $document->lines as $line ) {
+		$total += $line->quantity * (float) $line->unit_price;
+	}
+}
 
 $sender      = $document->parties->sender;
 $recipient   = $document->parties->recipient;
@@ -152,6 +180,10 @@ $cancelled   = DocumentStatus::Cancelled === $document->status;
 			<th><?php echo esc_html__( 'Description', 'oxyddt-for-woocommerce' ); ?></th>
 			<th class="right" style="width:20mm"><?php echo esc_html__( 'Quantity', 'oxyddt-for-woocommerce' ); ?></th>
 			<th style="width:14mm"><?php echo esc_html__( 'Unit', 'oxyddt-for-woocommerce' ); ?></th>
+			<?php if ( $show_prices ) : ?>
+				<th class="right" style="width:22mm"><?php echo esc_html__( 'Unit price', 'oxyddt-for-woocommerce' ); ?></th>
+				<th class="right" style="width:24mm"><?php echo esc_html__( 'Amount', 'oxyddt-for-woocommerce' ); ?></th>
+			<?php endif; ?>
 		</tr>
 	</thead>
 	<tbody>
@@ -161,10 +193,30 @@ $cancelled   = DocumentStatus::Cancelled === $document->status;
 				<td><?php echo esc_html( $line->name ); ?></td>
 				<td class="right"><?php echo esc_html( Labels::quantity( $line->quantity ) ); ?></td>
 				<td><?php echo esc_html( $line->unit ); ?></td>
+				<?php if ( $show_prices ) : ?>
+					<td class="right"><?php echo esc_html( Labels::money( (float) $line->unit_price ) ); ?></td>
+					<td class="right"><?php echo esc_html( Labels::money( $line->quantity * (float) $line->unit_price ) ); ?></td>
+				<?php endif; ?>
 			</tr>
 		<?php endforeach; ?>
 	</tbody>
+	<?php if ( $show_prices ) : ?>
+		<tfoot>
+			<tr>
+				<td colspan="5" class="right">
+					<?php echo esc_html__( 'Total, net of tax', 'oxyddt-for-woocommerce' ); ?>
+				</td>
+				<td class="right"><strong><?php echo esc_html( Labels::money( $total ) ); ?></strong></td>
+			</tr>
+		</tfoot>
+	<?php endif; ?>
 </table>
+
+<?php if ( $show_prices ) : ?>
+	<p class="small">
+		<?php echo esc_html__( 'Amounts are net of tax and are stated for the goods listed above. This document is not an invoice.', 'oxyddt-for-woocommerce' ); ?>
+	</p>
+<?php endif; ?>
 
 <table class="foot">
 	<tr>

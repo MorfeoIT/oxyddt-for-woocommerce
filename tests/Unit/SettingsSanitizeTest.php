@@ -34,6 +34,37 @@ final class SettingsSanitizeTest extends TestCase {
 	}
 
 	/**
+	 * The three lists a shop fills in are lists of strings, and nothing else.
+	 *
+	 * They arrive from a textarea, which is the one field where somebody pastes
+	 * a column out of a spreadsheet, blank lines and repeats included.
+	 *
+	 * @return void
+	 */
+	public function test_the_lists_are_tidied_and_deduplicated(): void {
+		$clean = Settings::sanitize(
+			array(
+				'carriers'         => array( ' BRT ', 'GLS', 'BRT', '', 'GLS' ),
+				'attach_to_emails' => array( 'customer_completed_order', array( 'nested' ), 'customer_completed_order' ),
+			)
+		);
+
+		$this->assertSame( array( 'BRT', 'GLS' ), $clean['carriers'] );
+		$this->assertSame( array( 'customer_completed_order' ), $clean['attach_to_emails'] );
+	}
+
+	/**
+	 * Prices off unless somebody said otherwise: a delivery note is not an
+	 * invoice, and the shop that wants amounts on it asks for them.
+	 *
+	 * @return void
+	 */
+	public function test_prices_are_off_until_asked_for(): void {
+		$this->assertFalse( Settings::sanitize( array() )['show_prices'] );
+		$this->assertTrue( Settings::sanitize( array( 'show_prices' => '1' ) )['show_prices'] );
+	}
+
+	/**
 	 * A key nobody declared does not get stored. It is how a crafted import would
 	 * otherwise plant options of its own.
 	 *

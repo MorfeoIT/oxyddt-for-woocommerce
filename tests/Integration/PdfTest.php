@@ -106,7 +106,7 @@ final class PdfTest extends WP_UnitTestCase {
 
 		$this->documents = new DocumentRepository( $clock );
 		$this->archive   = new PdfStore();
-		$this->html      = new DocumentHtml( new Templates() );
+		$this->html      = new DocumentHtml( new Templates(), $settings );
 		$this->drafts    = new DocumentFactory( $settings, $clock );
 
 		$this->pdf = new PdfService(
@@ -138,6 +138,25 @@ final class PdfTest extends WP_UnitTestCase {
 		);
 
 		return $this->issuer->issue( $draft );
+	}
+
+	/**
+	 * Prices are off unless a shop asks, because a delivery note is not an
+	 * invoice and most of them are handed to a courier.
+	 *
+	 * @return void
+	 */
+	public function test_prices_are_not_printed_unless_the_shop_asks(): void {
+		$document = $this->issued();
+
+		$this->assertStringNotContainsString( 'Unit price', $this->html->for_document( $document ) );
+
+		( new Settings() )->update( array( 'show_prices' => true ) );
+
+		$html = $this->html->for_document( $document );
+
+		$this->assertStringContainsString( 'Unit price', $html );
+		$this->assertStringContainsString( 'Total, net of tax', $html );
 	}
 
 	/**

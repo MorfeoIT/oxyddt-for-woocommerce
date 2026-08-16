@@ -63,15 +63,17 @@ final class DocumentMailer {
 	/**
 	 * Send a delivery note.
 	 *
-	 * @param Document $document The document.
-	 * @param string   $to       Where to.
-	 * @param string   $subject  The subject.
-	 * @param string   $message  The body, as plain text.
+	 * @param Document     $document The document.
+	 * @param string       $to       Where to.
+	 * @param string       $subject  The subject.
+	 * @param string       $message  The body, as plain text.
+	 * @param list<string> $cc       Copies, openly.
+	 * @param list<string> $bcc      Copies nobody else sees.
 	 * @return bool Whether WordPress accepted it for delivery.
 	 *
 	 * @throws MailException If the document cannot be sent at all.
 	 */
-	public function send( Document $document, string $to, string $subject, string $message ): bool {
+	public function send( Document $document, string $to, string $subject, string $message, array $cc = array(), array $bcc = array() ): bool {
 		if ( ! $document->status->is_numbered() ) {
 			throw new MailException( 'A draft has no number and is not sent.' );
 		}
@@ -82,6 +84,9 @@ final class DocumentMailer {
 			throw new MailException( 'That is not an email address.' );
 		}
 
+		$cc  = self::addresses( $cc );
+		$bcc = self::addresses( $bcc );
+
 		try {
 			$attachment = $this->pdf->attachment_path( $document );
 		} catch ( PdfException $e ) {
@@ -89,6 +94,14 @@ final class DocumentMailer {
 		}
 
 		$headers = array( 'Content-Type: text/plain; charset=UTF-8' );
+
+		foreach ( $cc as $address ) {
+			$headers[] = 'Cc: ' . $address;
+		}
+
+		foreach ( $bcc as $address ) {
+			$headers[] = 'Bcc: ' . $address;
+		}
 
 		/**
 		 * Filters the email a delivery note is sent in.
@@ -127,6 +140,10 @@ final class DocumentMailer {
 			),
 			array(
 				'to'   => $to,
+				'cc'   => $cc,
+				// The blind copies are counted, not named: writing them into a log
+				// several people can read is one way of un-blinding them.
+				'bcc'  => count( $bcc ),
 				'sent' => $sent,
 			),
 			$document->id
@@ -147,6 +164,33 @@ final class DocumentMailer {
 		do_action( 'oxyddt_sent', $document, $to, $sent );
 
 		return $sent;
+	}
+
+	/**
+	 * The addresses in a list that are addresses.
+	 *
+	 * A copy field is where somebody pastes three addresses separated by
+	 * whatever their mail client used, so what is not an address is dropped
+	 * rather than refused: the delivery note still has to reach the customer,
+	 * and a typo in a copy is not a reason to stop that.
+	 *
+	 * @param list<string> $addresses As typed.
+	 * @return list<string>
+	 */
+	private static function addresses( array $addresses ): array {
+		$clean = array();
+
+		foreach ( $addresses as $address ) {
+			$address = trim( (string) $address );
+
+			if ( '' === $address || ! is_email( $address ) || in_array( $address, $clean, true ) ) {
+				continue;
+			}
+
+			$clean[] = $address;
+		}
+
+		return $clean;
 	}
 
 	/**

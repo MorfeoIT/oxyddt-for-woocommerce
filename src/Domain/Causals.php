@@ -88,6 +88,60 @@ final class Causals {
 	}
 
 	/**
+	 * Every reason a shop can choose from: the built-in ones and its own.
+	 *
+	 * Built-in codes come back with an empty label because only the layer above
+	 * can translate them; a shop's own reasons carry the words somebody typed,
+	 * which are the words that belong on the paper and are never translated.
+	 *
+	 * A shop cannot redefine a built-in code by adding one with the same name:
+	 * the register filters by code, and two meanings behind one code is a filter
+	 * that quietly returns the wrong documents.
+	 *
+	 * @param array<string, string> $custom The shop's own reasons, code to label.
+	 * @return array<string, string> Code to label, built-in first.
+	 */
+	public static function all( array $custom = array() ): array {
+		$all = array();
+
+		foreach ( self::defaults() as $code ) {
+			$all[ $code ] = '';
+		}
+
+		foreach ( self::clean_custom( $custom ) as $code => $label ) {
+			$all[ $code ] = $label;
+		}
+
+		return $all;
+	}
+
+	/**
+	 * A shop's own reasons, in the shape they are stored in.
+	 *
+	 * @param array<string|int, mixed> $custom As typed or as stored.
+	 * @return array<string, string> Code to label.
+	 */
+	public static function clean_custom( array $custom ): array {
+		$clean = array();
+
+		foreach ( $custom as $code => $label ) {
+			$code = self::normalise( (string) $code );
+
+			if ( '' === $code || self::is_default( $code ) || isset( $clean[ $code ] ) ) {
+				continue;
+			}
+
+			$label = is_scalar( $label ) ? trim( (string) $label ) : '';
+
+			// A reason with no words is a code somebody has to decode. Falling back
+			// to the code itself at least prints something a human wrote.
+			$clean[ $code ] = '' === $label ? $code : $label;
+		}
+
+		return $clean;
+	}
+
+	/**
 	 * Whether a code is one of the plugin's own.
 	 *
 	 * A shop's own reasons are not "unknown", they are simply not ours, which is

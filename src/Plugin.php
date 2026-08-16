@@ -29,6 +29,7 @@ use Oxysoft\OxyDDT\Infrastructure\Registrable;
 use Oxysoft\OxyDDT\Infrastructure\SystemClock;
 use Oxysoft\OxyDDT\Infrastructure\Templates;
 use Oxysoft\OxyDDT\Mail\DocumentMailer;
+use Oxysoft\OxyDDT\Mail\OrderEmailAttachments;
 use Oxysoft\OxyDDT\Pdf\DocumentHtml;
 use Oxysoft\OxyDDT\Pdf\DompdfRenderer;
 use Oxysoft\OxyDDT\Pdf\PdfRendererInterface;
@@ -119,6 +120,11 @@ final class Plugin {
 	 * Service identifier of the mailer.
 	 */
 	public const MAILER = 'mail';
+
+	/**
+	 * Service identifier of the delivery notes attached to WooCommerce's emails.
+	 */
+	public const ORDER_EMAIL_ATTACHMENTS = 'mail.order-attachments';
 
 	/**
 	 * Service identifier of the download, print and send endpoints.
@@ -289,7 +295,10 @@ final class Plugin {
 			static fn ( Container $c ): PdfService => new PdfService(
 				$c->get_typed( self::PDF_RENDERER, PdfRendererInterface::class ),
 				new PdfStore(),
-				new DocumentHtml( $c->get_typed( self::TEMPLATES, Templates::class ) ),
+				new DocumentHtml(
+					$c->get_typed( self::TEMPLATES, Templates::class ),
+					$c->get_typed( self::SETTINGS, Settings::class )
+				),
 				$c->get_typed( self::DOCUMENTS, DocumentRepositoryInterface::class ),
 				$c->get_typed( self::AUDIT, AuditLog::class )
 			)
@@ -300,6 +309,18 @@ final class Plugin {
 			static fn ( Container $c ): DocumentMailer => new DocumentMailer(
 				$c->get_typed( self::PDF, PdfService::class ),
 				$c->get_typed( self::AUDIT, AuditLog::class )
+			)
+		);
+
+		// Not admin-only either: WooCommerce sends its emails from wherever the
+		// order status changed, which is usually not the admin — a payment
+		// gateway calling back, or a cron run.
+		$container->set(
+			self::ORDER_EMAIL_ATTACHMENTS,
+			static fn ( Container $c ): OrderEmailAttachments => new OrderEmailAttachments(
+				$c->get_typed( self::DOCUMENTS, DocumentRepositoryInterface::class ),
+				$c->get_typed( self::PDF, PdfService::class ),
+				$c->get_typed( self::SETTINGS, Settings::class )
 			)
 		);
 
@@ -364,7 +385,8 @@ final class Plugin {
 					$c->get_typed( self::FULFILMENT, OrderFulfilment::class ),
 					$c->get_typed( self::AUDIT, AuditLog::class ),
 					$c->get_typed( self::ISSUER, Issuer::class ),
-					$c->get_typed( self::MAILER, DocumentMailer::class )
+					$c->get_typed( self::MAILER, DocumentMailer::class ),
+					$c->get_typed( self::SETTINGS, Settings::class )
 				)
 			);
 

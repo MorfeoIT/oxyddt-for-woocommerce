@@ -11,6 +11,7 @@ namespace Oxysoft\OxyDDT\Pdf;
 
 use Oxysoft\OxyDDT\Domain\Document;
 use Oxysoft\OxyDDT\Infrastructure\Templates;
+use Oxysoft\OxyDDT\Settings\Settings;
 
 /*
  * The exceptions in this file name paths and library errors, and are read by
@@ -37,12 +38,21 @@ final class DocumentHtml {
 	private Templates $templates;
 
 	/**
+	 * The settings.
+	 *
+	 * @var Settings
+	 */
+	private Settings $settings;
+
+	/**
 	 * Build the builder.
 	 *
 	 * @param Templates $templates The template loader.
+	 * @param Settings  $settings  The settings.
 	 */
-	public function __construct( Templates $templates ) {
+	public function __construct( Templates $templates, Settings $settings ) {
 		$this->templates = $templates;
+		$this->settings  = $settings;
 	}
 
 	/**
@@ -54,11 +64,20 @@ final class DocumentHtml {
 	 * @throws PdfException If there is no template to render.
 	 */
 	public function for_document( Document $document ): string {
+		/*
+		 * Two things here are read now rather than taken from the snapshot: the
+		 * logo file, and whether prices are printed. Both are decisions about
+		 * printing rather than about what happened, and both are settled once —
+		 * the PDF is rendered at the moment of issue and archived, and the
+		 * archived file is what everything afterwards reads. A shop that turns
+		 * prices on tomorrow does not change a delivery note printed today.
+		 */
 		$html = $this->templates->render(
 			'pdf/document.php',
 			array(
-				'document' => $document,
-				'logo'     => $this->logo( $document ),
+				'document'    => $document,
+				'logo'        => $this->logo( $document ),
+				'show_prices' => $this->settings->shows_prices(),
 			)
 		);
 

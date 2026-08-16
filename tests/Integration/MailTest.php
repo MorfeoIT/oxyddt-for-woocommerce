@@ -12,6 +12,7 @@ namespace Oxysoft\OxyDDT\Tests\Integration;
 use Oxysoft\OxyDDT\Audit\AuditLog;
 use Oxysoft\OxyDDT\Domain\Company;
 use Oxysoft\OxyDDT\Domain\Document;
+use Oxysoft\OxyDDT\Infrastructure\Migrator;
 use Oxysoft\OxyDDT\Infrastructure\SystemClock;
 use Oxysoft\OxyDDT\Infrastructure\Templates;
 use Oxysoft\OxyDDT\Issuing\Issuer;
@@ -103,7 +104,7 @@ final class MailTest extends WP_UnitTestCase {
 			new PdfService(
 				new DompdfRenderer(),
 				new PdfStore(),
-				new DocumentHtml( new Templates() ),
+				new DocumentHtml( new Templates(), $settings ),
 				$this->documents,
 				new AuditLog( $clock )
 			),
@@ -164,6 +165,47 @@ final class MailTest extends WP_UnitTestCase {
 		$this->assertCount( 1, $attachments );
 		$this->assertStringEndsWith( '.pdf', (string) $attachments[0][1] );
 		$this->assertFileExists( (string) $attachments[0][0] );
+	}
+
+	/**
+	 * Copies go where they were addressed, and the blind ones stay blind.
+	 *
+	 * @return void
+	 */
+	public function test_copies_are_addressed_and_blind_copies_are_not_named(): void {
+		$document = $this->issued();
+
+		$this->mailer->send(
+			$document,
+			'ordini@example.test',
+			'Subject',
+			'Message',
+			array( 'magazzino@example.test', 'not an address', 'magazzino@example.test' ),
+			array( 'archivio@example.test' )
+		);
+
+		$mail = tests_retrieve_phpmailer_instance()->get_sent();
+
+		$this->assertNotFalse( $mail );
+
+		// Once, not twice: the same address pasted twice is one copy, and what
+		// was not an address at all is dropped rather than refused — a typo in a
+		// copy is no reason to stop the customer getting their delivery note.
+		$this->assertSame( 1, substr_count( $mail->header, 'Cc: magazzino@example.test' ) );
+		$this->assertStringNotContainsString( 'not an address', $mail->header );
+
+		$log = $GLOBALS['wpdb']->get_var(
+			$GLOBALS['wpdb']->prepare(
+				'SELECT context FROM ' . Migrator::table( Migrator::TABLE_LOGS ) . ' WHERE document_id = %d AND event = %s ORDER BY id DESC LIMIT 1',
+				$document->id,
+				AuditLog::DOCUMENT_SENT
+			)
+		);
+
+		// The log counts the blind copies and does not name them: writing them
+		// into a register several people can read is one way of un-blinding them.
+		$this->assertStringNotContainsString( 'archivio@example.test', (string) $log );
+		$this->assertStringContainsString( '"bcc":1', (string) $log );
 	}
 
 	/**

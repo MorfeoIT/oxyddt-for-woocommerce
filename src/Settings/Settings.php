@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Oxysoft\OxyDDT\Settings;
 
+use Oxysoft\OxyDDT\Domain\Causals;
 use Oxysoft\OxyDDT\Domain\Company;
 use Oxysoft\OxyDDT\Domain\NumberingPolicy;
 
@@ -44,6 +45,27 @@ final class Settings {
 			// here: a sequence is a row two requests update at the same moment, and
 			// an option is exactly the wrong place for that.
 			'numbering'                => ( new NumberingPolicy() )->to_array(),
+
+			// Prices are off by default because a delivery note is not an invoice
+			// and a shop that hands one to a courier rarely wants the amounts on
+			// it. The figures are stored on every line whatever this says, so
+			// turning it on is a decision about printing, not about recording.
+			'show_prices'              => false,
+
+			// Reasons for transport a shop added to the nine built in. Code to
+			// label; the codes end up on issued documents, so they are kept even
+			// after somebody deletes the reason from this list.
+			'custom_causals'           => array(),
+
+			// Carriers a shop uses often, offered as a list beside the field
+			// somebody types in. A name, nothing more: the full address book is
+			// PRO.
+			'carriers'                 => array(),
+
+			// WooCommerce emails the issued delivery notes of an order are
+			// attached to. Empty by default: nothing leaves a shop because a
+			// status changed unless somebody asked for it.
+			'attach_to_emails'         => array(),
 
 			// Deleting the plugin does not delete a shop's delivery notes. An
 			// administrator who wants that turns this on first, and means it.
@@ -159,7 +181,72 @@ final class Settings {
 			// an origin left blank becomes no origin at all.
 			'company'                  => Company::from_array( is_array( $company ) ? $company : array() )->to_array(),
 			'numbering'                => NumberingPolicy::from_array( is_array( $numbering ) ? $numbering : array() )->to_array(),
+			'show_prices'              => ! empty( $input['show_prices'] ),
+			'custom_causals'           => Causals::clean_custom( is_array( $input['custom_causals'] ?? null ) ? $input['custom_causals'] : array() ),
+			'carriers'                 => self::clean_list( $input['carriers'] ?? array() ),
+			'attach_to_emails'         => self::clean_list( $input['attach_to_emails'] ?? array() ),
 			'delete_data_on_uninstall' => ! empty( $input['delete_data_on_uninstall'] ),
 		);
+	}
+
+	/**
+	 * The reasons for transport this shop offers: the built-in ones and its own.
+	 *
+	 * @return array<string, string> Code to label.
+	 */
+	public function causals(): array {
+		$stored = $this->all()['custom_causals'];
+
+		return Causals::all( is_array( $stored ) ? $stored : array() );
+	}
+
+	/**
+	 * The carriers a shop uses often.
+	 *
+	 * @return list<string>
+	 */
+	public function carriers(): array {
+		$stored = $this->all()['carriers'];
+
+		return is_array( $stored ) ? array_values( array_filter( $stored, 'is_string' ) ) : array();
+	}
+
+	/**
+	 * Whether prices are printed on the paper.
+	 *
+	 * @return bool
+	 */
+	public function shows_prices(): bool {
+		return (bool) $this->all()['show_prices'];
+	}
+
+	/**
+	 * A list of strings, trimmed, without blanks or repeats.
+	 *
+	 * @param mixed $input Raw value.
+	 * @return list<string>
+	 */
+	private static function clean_list( $input ): array {
+		if ( ! is_array( $input ) ) {
+			return array();
+		}
+
+		$clean = array();
+
+		foreach ( $input as $value ) {
+			if ( ! is_scalar( $value ) ) {
+				continue;
+			}
+
+			$value = trim( (string) $value );
+
+			if ( '' === $value || in_array( $value, $clean, true ) ) {
+				continue;
+			}
+
+			$clean[] = $value;
+		}
+
+		return $clean;
 	}
 }

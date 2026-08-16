@@ -5,6 +5,31 @@ read; this one is for whoever works on the plugin.
 
 ## [Unreleased]
 
+### The rest of the specification, for the free plugin
+
+* **Prices, when a shop wants them.** Off by default, because a delivery note is
+  not an invoice and most of them are handed to a courier. On, and every line
+  carries its unit price and amount and the document a total, net of tax. The
+  figures were already recorded on every line; this only decides what is printed,
+  and never changes a document already issued.
+* **A shop's own reasons for transport**, added to the nine built in. Written as
+  words and given a code, or with a code of your own before a vertical bar —
+  because the register filters by code and a code has to survive a change of
+  wording. Removing one never changes a document that was issued under it.
+* **Carriers you use often**, offered beside the field rather than instead of it:
+  the courier used once this year is still typed straight in.
+* **Copies on the email**: Cc and Bcc, separated however they were pasted. The
+  log records the copies openly and counts the blind ones without naming them.
+* **Delivery notes on WooCommerce's own emails**, for the emails a shop names and
+  no others. Only issued documents: a draft has no number, and a cancelled one
+  says on its face that it is void. Off until somebody asks — it is the only
+  place in the plugin where a file leaves the shop because a status changed.
+* **A document that covers several orders can no longer be quietly mutilated.**
+  The editing screen builds its quantities from one order, so it now shows such a
+  document and refuses to save it instead of keeping one order's goods and
+  dropping the rest. The schema has always allowed those documents, so this is
+  not about any add-on: it is about what that screen can honestly do.
+
 ### Sprint 8 (part) — the bench, and Italian
 
 * A test bench at `test.44123.it/oxyddt`: a clean WordPress with only WooCommerce

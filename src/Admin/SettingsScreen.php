@@ -11,8 +11,10 @@ namespace Oxysoft\OxyDDT\Admin;
 
 use Oxysoft\OxyDDT\Audit\AuditLog;
 use Oxysoft\OxyDDT\Domain\Address;
+use Oxysoft\OxyDDT\Domain\Causals;
 use Oxysoft\OxyDDT\Domain\Company;
 use Oxysoft\OxyDDT\Infrastructure\Registrable;
+use Oxysoft\OxyDDT\Mail\OrderEmailAttachments;
 use Oxysoft\OxyDDT\Security\Capabilities;
 use Oxysoft\OxyDDT\Settings\Settings;
 
@@ -175,6 +177,18 @@ final class SettingsScreen implements Registrable {
 		self::address_rows( 'company[origin]', $company->origin ?? new Address( '', '', '', '', '' ) );
 		echo '</tbody></table>';
 
+		echo '<h2>' . esc_html__( 'What is printed', 'oxyddt-for-woocommerce' ) . '</h2>';
+		echo '<table class="form-table" role="presentation"><tbody><tr><th scope="row">' . esc_html__( 'Prices', 'oxyddt-for-woocommerce' ) . '</th><td>';
+		echo '<label><input type="checkbox" name="show_prices" value="1"'
+			. checked( ! empty( $settings['show_prices'] ), true, false ) . ' /> '
+			. esc_html__( 'Print unit prices and amounts on the delivery note', 'oxyddt-for-woocommerce' ) . '</label>';
+		echo '<p class="description">' . esc_html__( 'Off by default: a delivery note is not an invoice, and most shops hand one to a courier. The figures come from the order, net of tax and after any discount, and they are recorded on every line whatever this says — turning it on changes what is printed from now on, never a document already issued.', 'oxyddt-for-woocommerce' ) . '</p>';
+		echo '</td></tr></tbody></table>';
+
+		$this->render_causals( $settings );
+		$this->render_carriers( $settings );
+		$this->render_email_attachments( $settings );
+
 		echo '<h2>' . esc_html__( 'Deleting the plugin', 'oxyddt-for-woocommerce' ) . '</h2>';
 		echo '<table class="form-table" role="presentation"><tbody><tr><th scope="row">' . esc_html__( 'Stored documents', 'oxyddt-for-woocommerce' ) . '</th><td>';
 		echo '<label><input type="checkbox" name="delete_data_on_uninstall" value="1"'
@@ -187,6 +201,173 @@ final class SettingsScreen implements Registrable {
 		echo '</form>';
 
 		$this->render_readiness( $company );
+	}
+
+	/**
+	 * A textarea read as a list of lines.
+	 *
+	 * @param string $field The field name.
+	 * @return list<string>
+	 */
+	private static function lines_from_request( string $field ): array {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- The caller verified it.
+		$raw = isset( $_POST[ $field ] ) && is_scalar( $_POST[ $field ] )
+			? sanitize_textarea_field( wp_unslash( (string) $_POST[ $field ] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Missing -- The caller verified it.
+			: '';
+
+		$lines = array();
+		$split = preg_split( '/\R/', $raw );
+
+		foreach ( is_array( $split ) ? $split : array() as $line ) {
+			$line = trim( (string) $line );
+
+			if ( '' !== $line ) {
+				$lines[] = $line;
+			}
+		}
+
+		return $lines;
+	}
+
+	/**
+	 * A group of checkboxes, as the ones that were ticked.
+	 *
+	 * @param string $field The field name.
+	 * @return list<string>
+	 */
+	private static function checkboxes_from_request( string $field ): array {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- The caller verified it.
+		$raw = isset( $_POST[ $field ] ) && is_array( $_POST[ $field ] )
+			? wp_unslash( $_POST[ $field ] ) // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Missing -- Sanitised below; the caller verified the nonce.
+			: array();
+
+		$ticked = array();
+
+		foreach ( $raw as $value ) {
+			if ( ! is_scalar( $value ) ) {
+				continue;
+			}
+
+			$value = sanitize_key( (string) $value );
+
+			if ( '' !== $value ) {
+				$ticked[] = $value;
+			}
+		}
+
+		return $ticked;
+	}
+
+	/**
+	 * The shop's own reasons for transport, as typed.
+	 *
+	 * @return array<string, string> Code to label.
+	 */
+	private static function causals_from_request(): array {
+		$custom = array();
+
+		foreach ( self::lines_from_request( 'custom_causals' ) as $line ) {
+			$parts = explode( '|', $line, 2 );
+			$label = trim( $parts[ count( $parts ) - 1 ] );
+			$code  = Causals::normalise( 2 === count( $parts ) ? $parts[0] : $label );
+
+			if ( '' === $code || '' === $label ) {
+				continue;
+			}
+
+			$custom[ $code ] = $label;
+		}
+
+		return $custom;
+	}
+
+	/**
+	 * The reasons for transport a shop added to the nine built in.
+	 *
+	 * One per line, because a shop that has its own has two or three of them and
+	 * a repeatable row widget would be more machinery than the problem deserves.
+	 *
+	 * @param array<string, mixed> $settings The settings as stored.
+	 * @return void
+	 */
+	private function render_causals( array $settings ): void {
+		$custom = is_array( $settings['custom_causals'] ?? null ) ? $settings['custom_causals'] : array();
+		$lines  = array();
+
+		foreach ( $custom as $code => $label ) {
+			// Written back as the shop typed it when the code was derived from the
+			// label, and as "code|label" when it was not: a code somebody chose is
+			// a code they can keep.
+			$lines[] = Causals::normalise( (string) $label ) === (string) $code
+				? (string) $label
+				: $code . '|' . $label;
+		}
+
+		echo '<h2>' . esc_html__( 'Reasons for transport', 'oxyddt-for-woocommerce' ) . '</h2>';
+		echo '<table class="form-table" role="presentation"><tbody><tr><th scope="row"><label for="oxyddt-causals">'
+			. esc_html__( 'Your own reasons', 'oxyddt-for-woocommerce' ) . '</label></th><td>';
+		echo '<textarea id="oxyddt-causals" name="custom_causals" rows="4" class="large-text code">'
+			. esc_textarea( implode( "\n", $lines ) ) . '</textarea>';
+		echo '<p class="description">'
+			. esc_html__( 'One per line, added to the nine the plugin ships with. Write the words you want printed; a code is worked out from them. To keep a code of your own — the register filters by code — write it first, separated by a vertical bar: conto_deposito|Conto deposito.', 'oxyddt-for-woocommerce' )
+			. '</p>';
+		echo '<p class="description">'
+			. esc_html__( 'Removing one here never changes a delivery note already issued: a document keeps the reason it was issued with.', 'oxyddt-for-woocommerce' )
+			. '</p>';
+		echo '</td></tr></tbody></table>';
+	}
+
+	/**
+	 * The carriers a shop uses often.
+	 *
+	 * @param array<string, mixed> $settings The settings as stored.
+	 * @return void
+	 */
+	private function render_carriers( array $settings ): void {
+		$carriers = is_array( $settings['carriers'] ?? null ) ? $settings['carriers'] : array();
+
+		echo '<h2>' . esc_html__( 'Carriers', 'oxyddt-for-woocommerce' ) . '</h2>';
+		echo '<table class="form-table" role="presentation"><tbody><tr><th scope="row"><label for="oxyddt-carriers">'
+			. esc_html__( 'The ones you use', 'oxyddt-for-woocommerce' ) . '</label></th><td>';
+		echo '<textarea id="oxyddt-carriers" name="carriers" rows="4" class="large-text code">'
+			. esc_textarea( implode( "\n", array_map( 'strval', $carriers ) ) ) . '</textarea>';
+		echo '<p class="description">'
+			. esc_html__( 'One per line. They are offered beside the carrier field when a delivery note is prepared, and the field stays free text: a courier used once does not have to be added here first. Addresses, tax numbers and a default carrier per shipping method are a PRO feature.', 'oxyddt-for-woocommerce' )
+			. '</p>';
+		echo '</td></tr></tbody></table>';
+	}
+
+	/**
+	 * WooCommerce's own emails a shop wants the delivery notes attached to.
+	 *
+	 * @param array<string, mixed> $settings The settings as stored.
+	 * @return void
+	 */
+	private function render_email_attachments( array $settings ): void {
+		$chosen    = is_array( $settings['attach_to_emails'] ?? null ) ? $settings['attach_to_emails'] : array();
+		$available = OrderEmailAttachments::available();
+
+		echo '<h2>' . esc_html__( 'Delivery notes on WooCommerce emails', 'oxyddt-for-woocommerce' ) . '</h2>';
+		echo '<p class="description">'
+			. esc_html__( 'Everything else this plugin sends is a button somebody pressed. This is the one place where a file leaves the shop because a status changed, so it does nothing until you name the emails. Only issued delivery notes are attached: a draft has no number, and a cancelled one says on its face that it is void.', 'oxyddt-for-woocommerce' )
+			. '</p>';
+
+		if ( array() === $available ) {
+			echo '<p><em>' . esc_html__( 'WooCommerce has not listed its emails yet. Save the settings once from this screen with WooCommerce active and they will appear.', 'oxyddt-for-woocommerce' ) . '</em></p>';
+
+			return;
+		}
+
+		echo '<table class="form-table" role="presentation"><tbody><tr><th scope="row">'
+			. esc_html__( 'Attach to', 'oxyddt-for-woocommerce' ) . '</th><td><fieldset>';
+
+		foreach ( $available as $id => $title ) {
+			echo '<label style="display:block"><input type="checkbox" name="attach_to_emails[]" value="' . esc_attr( $id ) . '"'
+				. checked( in_array( $id, $chosen, true ), true, false ) . ' /> '
+				. esc_html( $title ) . '</label>';
+		}
+
+		echo '</fieldset></td></tr></tbody></table>';
 	}
 
 	/**
@@ -250,6 +431,11 @@ final class SettingsScreen implements Registrable {
 		$this->settings->update(
 			array(
 				'company'                  => $company->to_array(),
+				// phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_admin_referer() above is the verification.
+				'show_prices'              => isset( $_POST['show_prices'] ),
+				'custom_causals'           => self::causals_from_request(),
+				'carriers'                 => self::lines_from_request( 'carriers' ),
+				'attach_to_emails'         => self::checkboxes_from_request( 'attach_to_emails' ),
 				// phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_admin_referer() above is the verification.
 				'delete_data_on_uninstall' => isset( $_POST['delete_data_on_uninstall'] ),
 			)

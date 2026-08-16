@@ -137,6 +137,25 @@ final class Labels {
 	}
 
 	/**
+	 * An amount, the way the shop writes amounts.
+	 *
+	 * Through WooCommerce's own formatter, so the currency, the separators and
+	 * the position of the symbol are the shop's settings rather than a second
+	 * opinion — and then stripped of its markup, because this ends up inside a
+	 * PDF cell and not inside a shop page.
+	 *
+	 * @param float $amount The amount.
+	 * @return string
+	 */
+	public static function money( float $amount ): string {
+		if ( ! function_exists( 'wc_price' ) ) {
+			return number_format_i18n( $amount, 2 );
+		}
+
+		return trim( html_entity_decode( wp_strip_all_tags( wc_price( $amount ) ), ENT_QUOTES, 'UTF-8' ) );
+	}
+
+	/**
 	 * A date, the way the shop's own settings write it.
 	 *
 	 * @param string|null $date A date, "Y-m-d".
